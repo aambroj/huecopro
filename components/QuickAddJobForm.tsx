@@ -8,10 +8,14 @@ type AvailabilityResponse = {
   duration_minutes: number;
   slots: string[];
   error?: string;
+  is_non_working_day?: boolean;
 };
 
 const MADRID_TIME_ZONE = "Europe/Madrid";
 const WORK_DAY_END = "20:00";
+const DURATION_OPTIONS = [
+  30, 45, 60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480, 540, 600,
+];
 
 function toDateValue(date: Date) {
   const year = date.getUTCFullYear();
@@ -29,6 +33,11 @@ function addDaysToDateValue(dateValue: string, days: number) {
   const date = dateValueToUtcDate(dateValue);
   date.setUTCDate(date.getUTCDate() + days);
   return toDateValue(date);
+}
+
+function isSundayDate(dateValue: string) {
+  if (!dateValue) return false;
+  return dateValueToUtcDate(dateValue).getUTCDay() === 0;
 }
 
 function timeToMinutes(value: string) {
@@ -92,6 +101,12 @@ function formatDurationLabel(minutes: number) {
   return `${minutes} min`;
 }
 
+function isValidDuration(value: string | null) {
+  if (!value) return false;
+  const parsed = Number(value);
+  return DURATION_OPTIONS.includes(parsed);
+}
+
 export default function QuickAddJobForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -100,6 +115,7 @@ export default function QuickAddJobForm() {
 
   const queryDate = searchParams.get("date") || "";
   const queryTime = searchParams.get("time") || "";
+  const queryDuration = searchParams.get("duration") || "";
 
   const [clientName, setClientName] = useState("");
   const [phone, setPhone] = useState("");
@@ -119,15 +135,22 @@ export default function QuickAddJobForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const prefilledFromGap = Boolean(queryDate || queryTime || queryDuration);
+  const isSundaySelected = isSundayDate(workDate);
+
   useEffect(() => {
     if (queryDate && queryDate >= agendaMinDate) {
       setWorkDate(queryDate);
     }
 
+    if (isValidDuration(queryDuration)) {
+      setDurationMinutes(queryDuration);
+    }
+
     if (queryTime) {
       setStartTime(queryTime);
     }
-  }, [queryDate, queryTime, agendaMinDate]);
+  }, [queryDate, queryTime, queryDuration, agendaMinDate]);
 
   useEffect(() => {
     if (workDate < agendaMinDate) {
@@ -170,6 +193,10 @@ export default function QuickAddJobForm() {
             return current;
           }
 
+          if (queryTime && slots.includes(queryTime)) {
+            return queryTime;
+          }
+
           return slots[0] ?? "";
         });
       } catch (error) {
@@ -193,6 +220,15 @@ export default function QuickAddJobForm() {
     if (!workDate || !durationMinutes) {
       setAvailableTimes([]);
       setStartTime("");
+      setAvailabilityError(null);
+      return;
+    }
+
+    if (isSundaySelected) {
+      setAvailableTimes([]);
+      setStartTime("");
+      setAvailabilityError(null);
+      setLoadingAvailability(false);
       return;
     }
 
@@ -201,7 +237,7 @@ export default function QuickAddJobForm() {
     return () => {
       cancelled = true;
     };
-  }, [workDate, durationMinutes]);
+  }, [workDate, durationMinutes, queryTime, isSundaySelected]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -255,6 +291,7 @@ export default function QuickAddJobForm() {
   const noSlotsAvailable =
     !loadingAvailability &&
     !availabilityError &&
+    !isSundaySelected &&
     availableTimes.length === 0;
 
   const firstAvailableTime = availableTimes[0] ?? null;
@@ -275,6 +312,34 @@ export default function QuickAddJobForm() {
           </p>
         </div>
       </div>
+
+      {prefilledFromGap ? (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Formulario preparado desde un hueco libre.
+          {queryDate ? (
+            <>
+              {" "}
+              Día: <span className="font-semibold">{queryDate}</span>.
+            </>
+          ) : null}
+          {queryTime ? (
+            <>
+              {" "}
+              Hora: <span className="font-semibold">{queryTime}</span>.
+            </>
+          ) : null}
+          {isValidDuration(queryDuration) ? (
+            <>
+              {" "}
+              Duración:{" "}
+              <span className="font-semibold">
+                {formatDurationLabel(Number(queryDuration))}
+              </span>
+              .
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="mt-5 grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -338,12 +403,15 @@ export default function QuickAddJobForm() {
               className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500 disabled:bg-slate-100"
               required
               disabled={
+                isSundaySelected ||
                 loadingAvailability ||
                 !!availabilityError ||
                 availableTimes.length === 0
               }
             >
-              {loadingAvailability ? (
+              {isSundaySelected ? (
+                <option value="">Domingo · descanso</option>
+              ) : loadingAvailability ? (
                 <option value="">Cargando horas libres...</option>
               ) : availabilityError ? (
                 <option value="">No disponible</option>
@@ -389,7 +457,12 @@ export default function QuickAddJobForm() {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          {loadingAvailability ? (
+          {isSundaySelected ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <span className="font-semibold">Domingo marcado como descanso.</span>{" "}
+              No se ofrecen horas libres automáticas para ese día.
+            </div>
+          ) : loadingAvailability ? (
             <div className="text-sm text-slate-700">
               Cargando horas libres para{" "}
               <span className="font-semibold">
@@ -450,6 +523,7 @@ export default function QuickAddJobForm() {
           <button
             type="submit"
             disabled={
+              isSundaySelected ||
               saving ||
               loadingAvailability ||
               !!availabilityError ||

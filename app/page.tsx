@@ -30,11 +30,19 @@ type TimeGap = {
   minutes: number;
 };
 
+type TimelineMark = {
+  label: string;
+  offsetMinutes: number;
+};
+
 type HomePageProps = {
   searchParams?: Promise<{
     q?: string;
     status?: string;
     day?: string;
+    date?: string;
+    time?: string;
+    duration?: string;
   }>;
 };
 
@@ -44,6 +52,7 @@ const MADRID_TIME_ZONE = "Europe/Madrid";
 const WORK_DAY_START = "08:00";
 const WORK_DAY_END = "20:00";
 const MIN_GAP_MINUTES = 30;
+const QUICK_ADD_DEFAULT_DURATION = 60;
 
 function toDateValue(date: Date) {
   const year = date.getUTCFullYear();
@@ -106,6 +115,26 @@ function formatDateLabel(dateValue: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function formatShortDayLabel(dateValue: string) {
+  const date = dateValueToUtcDate(dateValue);
+
+  const label = date.toLocaleDateString(MADRID_LOCALE, {
+    timeZone: MADRID_TIME_ZONE,
+    weekday: "short",
+    day: "numeric",
+  });
+
+  return label.charAt(0).toUpperCase() + label.slice(1).replace(".", "");
+}
+
+function isSundayDate(dateValue: string) {
+  return dateValueToUtcDate(dateValue).getUTCDay() === 0;
+}
+
+function isNonWorkingDay(dateValue: string) {
+  return isSundayDate(dateValue);
+}
+
 function timeToMinutes(value: string) {
   const [hourText, minuteText] = value.slice(0, 5).split(":");
   return Number(hourText) * 60 + Number(minuteText);
@@ -154,6 +183,10 @@ function minutesToTime(totalMinutes: number) {
 
 function addMinutes(time: string, minutes: number) {
   return minutesToTime(timeToMinutes(time) + Number(minutes || 0));
+}
+
+function roundUpMinutes(totalMinutes: number, step: number) {
+  return Math.ceil(totalMinutes / step) * step;
 }
 
 function formatJobDurationLabel(minutes: number) {
@@ -262,6 +295,24 @@ function getDurationClasses(status: string) {
   return "inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-lg font-bold text-slate-700";
 }
 
+function getTimelineJobClasses(status: string) {
+  const normalized = status.trim().toLowerCase();
+
+  if (normalized === "pendiente") {
+    return "border-red-300 bg-red-100 text-red-900";
+  }
+
+  if (normalized === "hecho" || normalized === "terminado") {
+    return "border-sky-300 bg-sky-100 text-sky-900";
+  }
+
+  if (normalized === "facturado") {
+    return "border-indigo-300 bg-indigo-100 text-indigo-900";
+  }
+
+  return "border-slate-300 bg-slate-100 text-slate-900";
+}
+
 function isBlockingStatus(status: string) {
   const normalized = status.trim().toLowerCase();
   return (
@@ -271,9 +322,49 @@ function isBlockingStatus(status: string) {
   );
 }
 
-function buildGaps(trabajos: Trabajo[]) {
+function getVisibleDayStartMinutes(options?: {
+  dayDate?: string;
+  todayDate?: string;
+  currentMinutes?: number;
+}) {
   const dayStart = timeToMinutes(WORK_DAY_START);
   const dayEnd = timeToMinutes(WORK_DAY_END);
+
+  const isToday =
+    Boolean(options?.dayDate) &&
+    Boolean(options?.todayDate) &&
+    options?.dayDate === options?.todayDate;
+
+  if (!isToday) {
+    return dayStart;
+  }
+
+  return Math.min(
+    dayEnd,
+    Math.max(dayStart, roundUpMinutes(options?.currentMinutes ?? dayStart, 5))
+  );
+}
+
+function getVisibleDayWindowMinutes(options?: {
+  dayDate?: string;
+  todayDate?: string;
+  currentMinutes?: number;
+}) {
+  const dayEnd = timeToMinutes(WORK_DAY_END);
+  const visibleDayStart = getVisibleDayStartMinutes(options);
+  return Math.max(0, dayEnd - visibleDayStart);
+}
+
+function buildGaps(
+  trabajos: Trabajo[],
+  options?: {
+    dayDate?: string;
+    todayDate?: string;
+    currentMinutes?: number;
+  }
+) {
+  const dayEnd = timeToMinutes(WORK_DAY_END);
+  const visibleDayStart = getVisibleDayStartMinutes(options);
 
   const blockingTrabajos = trabajos
     .filter((trabajo) => isBlockingStatus(trabajo.status))
@@ -288,21 +379,31 @@ function buildGaps(trabajos: Trabajo[]) {
     })
     .sort((a, b) => a.start - b.start);
 
+  if (visibleDayStart >= dayEnd) {
+    return [] satisfies TimeGap[];
+  }
+
   if (blockingTrabajos.length === 0) {
+    const diff = dayEnd - visibleDayStart;
+
+    if (diff < MIN_GAP_MINUTES) {
+      return [] satisfies TimeGap[];
+    }
+
     return [
       {
-        start: WORK_DAY_START,
+        start: minutesToTime(visibleDayStart),
         end: WORK_DAY_END,
-        minutes: dayEnd - dayStart,
+        minutes: diff,
       },
     ] satisfies TimeGap[];
   }
 
   const gaps: TimeGap[] = [];
-  let cursor = dayStart;
+  let cursor = visibleDayStart;
 
   for (const trabajo of blockingTrabajos) {
-    const boundedStart = Math.max(dayStart, trabajo.start);
+    const boundedStart = Math.max(visibleDayStart, trabajo.start);
     const boundedEnd = Math.min(dayEnd, trabajo.end);
 
     if (boundedStart > cursor) {
@@ -348,6 +449,231 @@ function formatGapLabel(minutes: number) {
   }
 
   return `${minutes} min`;
+}
+
+function getSuggestedDurationForGap(gapMinutes: number) {
+  if (gapMinutes >= QUICK_ADD_DEFAULT_DURATION) {
+    return QUICK_ADD_DEFAULT_DURATION;
+  }
+
+  return gapMinutes;
+}
+
+function buildQuickAddHref(date: string, time: string, duration: number) {
+  const params = new URLSearchParams({
+    date,
+    time,
+    duration: String(duration),
+  });
+
+  return `/?${params.toString()}#quick-add-job-form`;
+}
+
+function getTotalFreeMinutes(gaps: TimeGap[]) {
+  return gaps.reduce((total, gap) => total + gap.minutes, 0);
+}
+
+function getFirstFreeTime(gaps: TimeGap[]) {
+  return gaps[0]?.start ?? null;
+}
+
+function getLongestGap(gaps: TimeGap[]) {
+  if (gaps.length === 0) return null;
+
+  return gaps.reduce((longest, current) => {
+    if (!longest || current.minutes > longest.minutes) {
+      return current;
+    }
+    return longest;
+  }, null as TimeGap | null);
+}
+
+function getOccupancyPercentage(
+  busyMinutes: number,
+  visibleWindowMinutes: number
+) {
+  if (visibleWindowMinutes <= 0) {
+    return 0;
+  }
+
+  return Math.min(
+    100,
+    Math.max(0, Math.round((busyMinutes / visibleWindowMinutes) * 100))
+  );
+}
+
+function getOccupancyBarClasses(percentage: number) {
+  if (percentage >= 85) return "bg-red-600";
+  if (percentage >= 60) return "bg-amber-500";
+  return "bg-emerald-500";
+}
+
+function getOccupancyTextClasses(percentage: number) {
+  if (percentage >= 85) return "text-red-700";
+  if (percentage >= 60) return "text-amber-700";
+  return "text-emerald-700";
+}
+
+function getCompactDayCardClasses(
+  percentage: number,
+  gapsCount: number,
+  isSunday: boolean,
+  isNonWorking: boolean
+) {
+  if (isNonWorking) {
+    return "border-rose-300 bg-rose-100/90";
+  }
+
+  if (isSunday) {
+    if (gapsCount === 0) {
+      return "border-rose-300 bg-rose-100/80";
+    }
+
+    return "border-rose-200 bg-rose-50/80";
+  }
+
+  if (gapsCount === 0) {
+    return "border-red-200 bg-red-50/60";
+  }
+
+  if (percentage >= 85) {
+    return "border-red-200 bg-white";
+  }
+
+  if (percentage >= 60) {
+    return "border-amber-200 bg-white";
+  }
+
+  return "border-emerald-200 bg-white";
+}
+
+function getCompactDayBadgeClasses(
+  isNonWorking: boolean,
+  gapsCount: number
+) {
+  if (isNonWorking) {
+    return "inline-flex min-w-[88px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-rose-200 bg-rose-100 px-2.5 py-1 text-[11px] font-bold leading-none text-rose-700";
+  }
+
+  if (gapsCount > 0) {
+    return "inline-flex min-w-[88px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-[11px] font-bold leading-none text-emerald-700";
+  }
+
+  return "inline-flex min-w-[88px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-[11px] font-bold leading-none text-red-700";
+}
+
+function getDaySectionClasses(isSunday: boolean) {
+  return isSunday
+    ? "border-rose-200 bg-rose-50/40"
+    : "border-slate-200 bg-white";
+}
+
+function getInnerPanelClasses(isSunday: boolean) {
+  return isSunday
+    ? "border-rose-200 bg-rose-50/55"
+    : "border-slate-200 bg-slate-50";
+}
+
+function getNonWorkingBadgeClasses() {
+  return "inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-rose-700";
+}
+
+function getRestPanelClasses() {
+  return "rounded-3xl border border-rose-200 bg-rose-50 px-5 py-5";
+}
+
+function getTimelineHeightPx(visibleWindowMinutes: number) {
+  return Math.max(240, Math.round(visibleWindowMinutes * 0.8));
+}
+
+function buildTimelineMarks(
+  visibleStartMinutes: number,
+  visibleEndMinutes: number
+) {
+  const marks: TimelineMark[] = [
+    {
+      label: minutesToTime(visibleStartMinutes),
+      offsetMinutes: 0,
+    },
+  ];
+
+  let currentHour = Math.ceil(visibleStartMinutes / 60) * 60;
+
+  if (currentHour === visibleStartMinutes) {
+    currentHour += 60;
+  }
+
+  while (currentHour < visibleEndMinutes) {
+    marks.push({
+      label: minutesToTime(currentHour),
+      offsetMinutes: currentHour - visibleStartMinutes,
+    });
+    currentHour += 60;
+  }
+
+  return marks;
+}
+
+function getTimelineBlockStyle(params: {
+  startMinutes: number;
+  endMinutes: number;
+  visibleStartMinutes: number;
+  visibleEndMinutes: number;
+  timelineHeightPx: number;
+  minHeightPx?: number;
+}) {
+  const {
+    startMinutes,
+    endMinutes,
+    visibleStartMinutes,
+    visibleEndMinutes,
+    timelineHeightPx,
+    minHeightPx = 32,
+  } = params;
+
+  const safeStart = Math.max(startMinutes, visibleStartMinutes);
+  const safeEnd = Math.min(endMinutes, visibleEndMinutes);
+  const visibleWindowMinutes = Math.max(
+    1,
+    visibleEndMinutes - visibleStartMinutes
+  );
+
+  const topPx =
+    ((safeStart - visibleStartMinutes) / visibleWindowMinutes) *
+    timelineHeightPx;
+
+  const rawHeightPx =
+    ((safeEnd - safeStart) / visibleWindowMinutes) * timelineHeightPx;
+
+  const heightPx = Math.max(minHeightPx, rawHeightPx);
+  const clampedHeightPx = Math.max(
+    minHeightPx,
+    Math.min(heightPx, timelineHeightPx - topPx)
+  );
+
+  return {
+    top: `${Math.max(0, topPx)}px`,
+    height: `${Math.max(minHeightPx, clampedHeightPx)}px`,
+  };
+}
+
+function getTimelineGapBlockStyle(params: {
+  startMinutes: number;
+  endMinutes: number;
+  visibleStartMinutes: number;
+  visibleEndMinutes: number;
+  timelineHeightPx: number;
+}) {
+  const base = getTimelineBlockStyle({
+    ...params,
+    minHeightPx: 28,
+  });
+
+  return {
+    ...base,
+    backgroundImage:
+      "repeating-linear-gradient(135deg, rgba(16,185,129,0.06) 0px, rgba(16,185,129,0.06) 10px, rgba(16,185,129,0.12) 10px, rgba(16,185,129,0.12) 20px)",
+  };
 }
 
 function matchesQuery(trabajo: Trabajo, query: string) {
@@ -554,7 +880,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const day = (resolvedSearchParams.day ?? "").trim();
   const hasActiveFilters = Boolean(query || status || day);
 
-  const todayInMadrid = getMadridNowParts().dateValue;
+  const madridNow = getMadridNowParts();
+  const todayInMadrid = madridNow.dateValue;
+  const currentMinutesInMadrid = madridNow.hour * 60 + madridNow.minute;
+
   const agendaStartDateInMadrid = getAgendaStartDateInMadrid();
   const days = buildNextDays(DAYS_TO_SHOW, agendaStartDateInMadrid);
 
@@ -614,13 +943,79 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       const blockingItems = items.filter((trabajo) =>
         isBlockingStatus(trabajo.status)
       );
-      const gaps = buildGaps(items);
+
+      const nonWorkingDay = isNonWorkingDay(dayItem.date);
+
+      const gaps = nonWorkingDay
+        ? []
+        : buildGaps(items, {
+            dayDate: dayItem.date,
+            todayDate: todayInMadrid,
+            currentMinutes: currentMinutesInMadrid,
+          });
+
+      const visibleDayStartMinutes = nonWorkingDay
+        ? timeToMinutes(WORK_DAY_START)
+        : getVisibleDayStartMinutes({
+            dayDate: dayItem.date,
+            todayDate: todayInMadrid,
+            currentMinutes: currentMinutesInMadrid,
+          });
+
+      const visibleDayEndMinutes = nonWorkingDay
+        ? timeToMinutes(WORK_DAY_START)
+        : timeToMinutes(WORK_DAY_END);
+
+      const totalFreeMinutes = nonWorkingDay ? 0 : getTotalFreeMinutes(gaps);
+
+      const visibleWindowMinutes = nonWorkingDay
+        ? 0
+        : getVisibleDayWindowMinutes({
+            dayDate: dayItem.date,
+            todayDate: todayInMadrid,
+            currentMinutes: currentMinutesInMadrid,
+          });
+
+      const busyMinutes = nonWorkingDay
+        ? 0
+        : Math.max(0, visibleWindowMinutes - totalFreeMinutes);
+
+      const occupancyPercentage = nonWorkingDay
+        ? 0
+        : getOccupancyPercentage(busyMinutes, visibleWindowMinutes);
+
+      const committedItemsCount = items.filter(
+        (trabajo) => trabajo.status.trim().toLowerCase() === "pendiente"
+      ).length;
+
+      const doneItemsCount = items.filter(
+        (trabajo) => trabajo.status.trim().toLowerCase() === "hecho"
+      ).length;
 
       return {
         ...dayItem,
+        shortLabel: formatShortDayLabel(dayItem.date),
+        isSunday: isSundayDate(dayItem.date),
+        isNonWorkingDay: nonWorkingDay,
         items,
         blockingItems,
         gaps,
+        totalFreeMinutes,
+        firstFreeTime: nonWorkingDay ? null : getFirstFreeTime(gaps),
+        longestGap: nonWorkingDay ? null : getLongestGap(gaps),
+        visibleWindowMinutes,
+        visibleDayStartMinutes,
+        visibleDayEndMinutes,
+        busyMinutes,
+        occupancyPercentage,
+        committedItemsCount,
+        doneItemsCount,
+        timelineHeightPx: getTimelineHeightPx(
+          Math.max(visibleWindowMinutes, 60)
+        ),
+        timelineMarks: nonWorkingDay
+          ? []
+          : buildTimelineMarks(visibleDayStartMinutes, visibleDayEndMinutes),
       };
     })
     .filter((dayItem) => {
@@ -700,6 +1095,139 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           })}
         </div>
 
+        {!hasActiveFilters && !error ? (
+          <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
+                  Semana en un vistazo
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Para detectar rápido qué día conviene aprovechar.
+                </p>
+              </div>
+
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                Próximos {DAYS_TO_SHOW} días
+              </span>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+              {daysWithData.map((dayItem) => (
+                <a
+                  key={`compact-${dayItem.date}`}
+                  href={`#day-${dayItem.date}`}
+                  className={`min-w-0 overflow-hidden rounded-3xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${getCompactDayCardClasses(
+                    dayItem.occupancyPercentage,
+                    dayItem.gaps.length,
+                    dayItem.isSunday,
+                    dayItem.isNonWorkingDay
+                  )}`}
+                >
+                  <div className="flex justify-end">
+                    <span
+                      className={getCompactDayBadgeClasses(
+                        dayItem.isNonWorkingDay,
+                        dayItem.gaps.length
+                      )}
+                    >
+                      {dayItem.isNonWorkingDay
+                        ? "Descanso"
+                        : dayItem.gaps.length > 0
+                        ? "Huecos"
+                        : "Lleno"}
+                    </span>
+                  </div>
+
+                  <div className="mt-2">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      {dayItem.shortLabel}
+                    </p>
+
+                    <p className="mt-2 text-2xl font-black leading-none text-slate-900">
+                      {dayItem.items.length}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {dayItem.items.length === 1 ? "trabajo" : "trabajos"}
+                    </p>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className={`h-full rounded-full ${
+                          dayItem.isNonWorkingDay
+                            ? "bg-rose-400"
+                            : getOccupancyBarClasses(dayItem.occupancyPercentage)
+                        }`}
+                        style={{
+                          width: `${
+                            dayItem.isNonWorkingDay
+                              ? 100
+                              : dayItem.occupancyPercentage
+                          }%`,
+                        }}
+                      />
+                    </div>
+
+                    <p
+                      className={`mt-2 text-sm font-bold ${
+                        dayItem.isNonWorkingDay
+                          ? "text-rose-700"
+                          : getOccupancyTextClasses(dayItem.occupancyPercentage)
+                      }`}
+                    >
+                      {dayItem.isNonWorkingDay
+                        ? "Día no laborable"
+                        : `${dayItem.occupancyPercentage}% ocupado`}
+                    </p>
+                  </div>
+
+                  {dayItem.isNonWorkingDay ? (
+                    <div className="mt-4 rounded-2xl border border-rose-200 bg-white/70 px-3 py-3 text-sm text-rose-700">
+                      Sin huecos automáticos.
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid gap-2 text-sm text-slate-600">
+                      <div className="flex items-center justify-between gap-2">
+                        <span>Libre</span>
+                        <span className="font-bold text-slate-800">
+                          {formatGapLabel(dayItem.totalFreeMinutes)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <span>Primera</span>
+                        <span className="font-bold text-slate-800">
+                          {dayItem.firstFreeTime ?? "--:--"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <span>Hueco top</span>
+                        <span className="font-bold text-slate-800">
+                          {dayItem.longestGap
+                            ? formatGapLabel(dayItem.longestGap.minutes)
+                            : "0 min"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                      Comprometidos: {dayItem.committedItemsCount}
+                    </span>
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      Hechos: {dayItem.doneItemsCount}
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-6">
           {error ? (
             <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-base text-red-700 shadow-sm">
@@ -714,16 +1242,36 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <div className="grid gap-5">
                 {daysWithData.map((dayItem) => (
                   <section
+                    id={`day-${dayItem.date}`}
                     key={dayItem.date}
-                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                    className={`scroll-mt-24 rounded-3xl border p-5 shadow-sm sm:p-6 ${getDaySectionClasses(
+                      dayItem.isSunday
+                    )}`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                          {dayItem.label}
-                        </h2>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                            {dayItem.label}
+                          </h2>
+
+                          {dayItem.isNonWorkingDay ? (
+                            <span className={getNonWorkingBadgeClasses()}>
+                              Descanso
+                            </span>
+                          ) : null}
+                        </div>
+
                         <p className="mt-2 text-base text-slate-500 sm:text-lg">
-                          {hasActiveFilters
+                          {dayItem.isNonWorkingDay
+                            ? dayItem.items.length > 0
+                              ? `Día no laborable por defecto. Hay ${dayItem.items.length} trabajo${
+                                  dayItem.items.length === 1 ? "" : "s"
+                                } guardado${
+                                  dayItem.items.length === 1 ? "" : "s"
+                                } manualmente.`
+                              : "Día no laborable por defecto."
+                            : hasActiveFilters
                             ? `${dayItem.items.length} resultado${
                                 dayItem.items.length === 1 ? "" : "s"
                               } en este día`
@@ -736,15 +1284,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                       </div>
 
                       <span
-                        className={`inline-flex items-center rounded-full px-4 py-2 text-base font-bold sm:text-lg ${
-                          hasActiveFilters
+                        className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-4 py-2 text-base font-bold sm:text-lg ${
+                          dayItem.isNonWorkingDay
+                            ? "bg-rose-100 text-rose-700"
+                            : hasActiveFilters
                             ? "bg-slate-100 text-slate-700"
                             : dayItem.gaps.length > 0
                             ? "bg-emerald-50 text-emerald-700"
                             : "bg-red-50 text-red-700"
                         }`}
                       >
-                        {hasActiveFilters
+                        {dayItem.isNonWorkingDay
+                          ? "Descanso"
+                          : hasActiveFilters
                           ? `${dayItem.items.length} resultado${
                               dayItem.items.length === 1 ? "" : "s"
                             }`
@@ -755,43 +1307,427 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                     </div>
 
                     {!hasActiveFilters ? (
-                      <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <p className="text-base font-bold text-slate-800 sm:text-lg">
-                            Huecos libres
-                          </p>
+                      <>
+                        {dayItem.isNonWorkingDay ? (
+                          <div className="mt-5">
+                            <div className={getRestPanelClasses()}>
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                  <p className="text-lg font-bold text-rose-800 sm:text-xl">
+                                    Día de descanso
+                                  </p>
+                                  <p className="mt-2 text-sm text-rose-700 sm:text-base">
+                                    Este día está marcado como no laborable por
+                                    defecto. No se generan huecos automáticos ni
+                                    disponibilidad sugerida.
+                                  </p>
 
-                          <p className="text-sm text-slate-500">
-                            Toca un hueco para preparar el formulario
-                          </p>
-                        </div>
+                                  {dayItem.items.length > 0 ? (
+                                    <p className="mt-3 text-sm font-medium text-rose-800">
+                                      Los trabajos que ya hayas guardado para
+                                      este día se siguen mostrando abajo.
+                                    </p>
+                                  ) : null}
+                                </div>
 
-                        {dayItem.gaps.length === 0 ? (
-                          <p className="mt-3 text-lg font-bold text-red-700 sm:text-xl">
-                            No quedan huecos de al menos {MIN_GAP_MINUTES} minutos.
-                          </p>
-                        ) : (
-                          <div className="mt-4 flex flex-wrap gap-3">
-                            {dayItem.gaps.map((gap) => (
-                              <Link
-                                key={`${dayItem.date}-${gap.start}-${gap.end}`}
-                                href={`/?date=${dayItem.date}&time=${gap.start}#quick-add-job-form`}
-                                className="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-xl font-extrabold leading-none text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 sm:text-2xl"
-                              >
-                                {gap.start} - {gap.end} ·{" "}
-                                {formatGapLabel(gap.minutes)}
-                              </Link>
-                            ))}
+                                <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700">
+                                  No laborable
+                                </span>
+                              </div>
+                            </div>
                           </div>
+                        ) : (
+                          <>
+                            <div
+                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                                dayItem.isSunday
+                              )}`}
+                            >
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-base font-bold text-slate-800 sm:text-lg">
+                                    Agenda visual del día
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Trabajos colocados por hora para verlo de un
+                                    vistazo.
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                                  <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-700">
+                                    Comprometido
+                                  </span>
+                                  <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sky-700">
+                                    Hecho
+                                  </span>
+                                  <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-indigo-700">
+                                    Facturado
+                                  </span>
+                                  <span className="rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1 text-emerald-700">
+                                    Hueco libre
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-600">
+                                Visible desde{" "}
+                                {minutesToTime(dayItem.visibleDayStartMinutes)}{" "}
+                                hasta{" "}
+                                {minutesToTime(dayItem.visibleDayEndMinutes)}
+                              </div>
+
+                              <div className="mt-4 grid gap-4 lg:grid-cols-[88px_1fr]">
+                                <div
+                                  className="relative hidden lg:block"
+                                  style={{
+                                    height: `${dayItem.timelineHeightPx}px`,
+                                  }}
+                                >
+                                  {dayItem.timelineMarks.map((mark) => {
+                                    const topPx =
+                                      (mark.offsetMinutes /
+                                        dayItem.visibleWindowMinutes) *
+                                      dayItem.timelineHeightPx;
+
+                                    return (
+                                      <div
+                                        key={`mark-label-${dayItem.date}-${mark.label}`}
+                                        className="absolute left-0 -translate-y-1/2 text-xs font-bold text-slate-500"
+                                        style={{ top: `${topPx}px` }}
+                                      >
+                                        {mark.label}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div
+                                  className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white"
+                                  style={{
+                                    height: `${dayItem.timelineHeightPx}px`,
+                                  }}
+                                >
+                                  {dayItem.timelineMarks.map((mark) => {
+                                    const topPx =
+                                      (mark.offsetMinutes /
+                                        dayItem.visibleWindowMinutes) *
+                                      dayItem.timelineHeightPx;
+
+                                    return (
+                                      <div
+                                        key={`mark-line-${dayItem.date}-${mark.label}`}
+                                        className="absolute left-0 right-0 border-t border-dashed border-slate-200"
+                                        style={{ top: `${topPx}px` }}
+                                      />
+                                    );
+                                  })}
+
+                                  {dayItem.gaps.map((gap) => {
+                                    const gapStartMinutes = timeToMinutes(
+                                      gap.start
+                                    );
+                                    const gapEndMinutes = timeToMinutes(gap.end);
+
+                                    return (
+                                      <div
+                                        key={`timeline-gap-${dayItem.date}-${gap.start}-${gap.end}`}
+                                        className="absolute left-3 right-3 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-3 py-2"
+                                        style={getTimelineGapBlockStyle({
+                                          startMinutes: gapStartMinutes,
+                                          endMinutes: gapEndMinutes,
+                                          visibleStartMinutes:
+                                            dayItem.visibleDayStartMinutes,
+                                          visibleEndMinutes:
+                                            dayItem.visibleDayEndMinutes,
+                                          timelineHeightPx:
+                                            dayItem.timelineHeightPx,
+                                        })}
+                                      >
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <p className="truncate text-xs font-bold uppercase tracking-wide text-emerald-700">
+                                              Hueco libre
+                                            </p>
+                                            <p className="truncate text-sm font-bold text-emerald-900">
+                                              {gap.start} - {gap.end}
+                                            </p>
+                                          </div>
+                                          <span className="shrink-0 text-xs font-bold text-emerald-700">
+                                            {formatGapLabel(gap.minutes)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+
+                                  {dayItem.blockingItems.map((trabajo) => {
+                                    const startMinutes = timeToMinutes(
+                                      trabajo.start_time
+                                    );
+                                    const endMinutes =
+                                      startMinutes +
+                                      Number(trabajo.duration_minutes || 0);
+
+                                    return (
+                                      <div
+                                        key={`timeline-job-${trabajo.id}`}
+                                        className={`absolute left-3 right-3 overflow-hidden rounded-2xl border px-3 py-2 shadow-sm ${getTimelineJobClasses(
+                                          trabajo.status
+                                        )}`}
+                                        style={getTimelineBlockStyle({
+                                          startMinutes,
+                                          endMinutes,
+                                          visibleStartMinutes:
+                                            dayItem.visibleDayStartMinutes,
+                                          visibleEndMinutes:
+                                            dayItem.visibleDayEndMinutes,
+                                          timelineHeightPx:
+                                            dayItem.timelineHeightPx,
+                                          minHeightPx: 46,
+                                        })}
+                                      >
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <p className="truncate text-sm font-black">
+                                              {trabajo.client_name}
+                                            </p>
+                                            <p className="truncate text-xs font-semibold opacity-90">
+                                              {formatTime(trabajo.start_time)} -{" "}
+                                              {addMinutes(
+                                                trabajo.start_time,
+                                                trabajo.duration_minutes
+                                              )}{" "}
+                                              ·{" "}
+                                              {formatJobDurationLabel(
+                                                trabajo.duration_minutes
+                                              )}
+                                            </p>
+                                          </div>
+
+                                          <span className="shrink-0 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-bold">
+                                            {getStatusLabel(trabajo.status)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div
+                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                                dayItem.isSunday
+                              )}`}
+                            >
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-base font-bold text-slate-800 sm:text-lg">
+                                    Ocupación visual del día
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Para ver rápido si todavía compensa encajar
+                                    algo.
+                                  </p>
+                                </div>
+
+                                <div
+                                  className={`text-sm font-bold ${getOccupancyTextClasses(
+                                    dayItem.occupancyPercentage
+                                  )}`}
+                                >
+                                  {dayItem.occupancyPercentage}% ocupado
+                                </div>
+                              </div>
+
+                              <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200">
+                                <div
+                                  className={`h-full rounded-full transition-all ${getOccupancyBarClasses(
+                                    dayItem.occupancyPercentage
+                                  )}`}
+                                  style={{
+                                    width: `${dayItem.occupancyPercentage}%`,
+                                  }}
+                                />
+                              </div>
+
+                              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Ocupado
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {formatGapLabel(dayItem.busyMinutes)}
+                                  </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Libre
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {formatGapLabel(dayItem.totalFreeMinutes)}
+                                  </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Ventana restante
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {formatGapLabel(dayItem.visibleWindowMinutes)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div
+                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                                dayItem.isSunday
+                              )}`}
+                            >
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-base font-bold text-slate-800 sm:text-lg">
+                                    Huecos libres
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Pulsa en uno y baja con el formulario
+                                    preparado.
+                                  </p>
+                                </div>
+
+                                <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Sugerencia por defecto:{" "}
+                                  {QUICK_ADD_DEFAULT_DURATION} min
+                                </div>
+                              </div>
+
+                              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Horas libres
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {formatGapLabel(dayItem.totalFreeMinutes)}
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Tiempo disponible real que queda ese día.
+                                  </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Primera hora libre
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {dayItem.firstFreeTime ?? "--:--"}
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Primer momento desde el que todavía puedes
+                                    encajar.
+                                  </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Hueco más largo
+                                  </p>
+                                  <p className="mt-1 text-2xl font-black leading-none text-slate-900">
+                                    {dayItem.longestGap
+                                      ? formatGapLabel(
+                                          dayItem.longestGap.minutes
+                                        )
+                                      : "0 min"}
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    {dayItem.longestGap
+                                      ? `${dayItem.longestGap.start} - ${dayItem.longestGap.end}`
+                                      : "Sin huecos suficientes"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {dayItem.gaps.length === 0 ? (
+                                <p className="mt-4 text-lg font-bold text-red-700 sm:text-xl">
+                                  No quedan huecos de al menos{" "}
+                                  {MIN_GAP_MINUTES} minutos.
+                                </p>
+                              ) : (
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                  {dayItem.gaps.map((gap) => {
+                                    const suggestedDuration =
+                                      getSuggestedDurationForGap(gap.minutes);
+
+                                    return (
+                                      <Link
+                                        key={`${dayItem.date}-${gap.start}-${gap.end}`}
+                                        href={buildQuickAddHref(
+                                          dayItem.date,
+                                          gap.start,
+                                          suggestedDuration
+                                        )}
+                                        className="group min-w-0 rounded-3xl border border-emerald-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50"
+                                      >
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
+                                              Hueco disponible
+                                            </p>
+                                            <p className="mt-2 text-2xl font-black leading-none text-slate-900 sm:text-[2rem]">
+                                              {gap.start} - {gap.end}
+                                            </p>
+                                            <p className="mt-2 text-sm font-medium text-slate-600">
+                                              Espacio libre de{" "}
+                                              {formatGapLabel(gap.minutes)}
+                                            </p>
+                                          </div>
+
+                                          <span className="inline-flex shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                                            {formatGapLabel(gap.minutes)}
+                                          </span>
+                                        </div>
+
+                                        <div className="mt-4 flex items-center justify-between gap-3">
+                                          <div className="text-sm text-slate-500">
+                                            Se propone empezar a las{" "}
+                                            <span className="font-bold text-slate-700">
+                                              {gap.start}
+                                            </span>{" "}
+                                            con{" "}
+                                            <span className="font-bold text-slate-700">
+                                              {suggestedDuration} min
+                                            </span>
+                                            .
+                                          </div>
+
+                                          <span className="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition group-hover:bg-emerald-700">
+                                            Encajar aquí
+                                          </span>
+                                        </div>
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </>
                         )}
-                      </div>
+                      </>
                     ) : null}
 
                     {dayItem.items.length === 0 ? (
                       !hasActiveFilters ? (
-                        <div className="mt-5 rounded-3xl border border-dashed border-emerald-200 bg-emerald-50 px-5 py-4 text-base font-semibold text-emerald-700 sm:text-lg">
-                          No tienes nada apuntado este día.
-                        </div>
+                        dayItem.isNonWorkingDay ? (
+                          <div className="mt-5 rounded-3xl border border-dashed border-rose-300 bg-rose-100/60 px-5 py-4 text-base font-semibold text-rose-700 sm:text-lg">
+                            Día de descanso sin huecos automáticos.
+                          </div>
+                        ) : (
+                          <div className="mt-5 rounded-3xl border border-dashed border-emerald-200 bg-emerald-50 px-5 py-4 text-base font-semibold text-emerald-700 sm:text-lg">
+                            No tienes nada apuntado este día.
+                          </div>
+                        )
                       ) : null
                     ) : (
                       <div className="mt-5 grid gap-3">

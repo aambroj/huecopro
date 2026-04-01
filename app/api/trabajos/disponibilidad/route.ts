@@ -18,6 +18,15 @@ function isValidDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+function dateValueToUtcDate(dateValue: string) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+}
+
+function isSundayDate(dateValue: string) {
+  return dateValueToUtcDate(dateValue).getUTCDay() === 0;
+}
+
 function timeToMinutes(value: string) {
   const [hourText, minuteText] = value.slice(0, 5).split(":");
   return Number(hourText) * 60 + Number(minuteText);
@@ -38,11 +47,6 @@ function toDateValue(date: Date) {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function dateValueToUtcDate(dateValue: string) {
-  const [year, month, day] = dateValue.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 }
 
 function addDaysToDateValue(dateValue: string, days: number) {
@@ -111,7 +115,12 @@ export async function GET(request: Request) {
     const ignoreIdText = (searchParams.get("ignore_id") || "").trim();
 
     const durationMinutes = Number(durationText);
-    const ignoreId = ignoreIdText ? Number(ignoreIdText) : null;
+    const parsedIgnoreId = ignoreIdText ? Number(ignoreIdText) : null;
+    const ignoreId =
+      parsedIgnoreId !== null && Number.isFinite(parsedIgnoreId)
+        ? parsedIgnoreId
+        : null;
+
     const agendaStartDate = getAgendaStartDateInMadrid();
 
     if (!date || !isValidDate(date)) {
@@ -151,7 +160,34 @@ export async function GET(request: Request) {
       );
     }
 
-    const trabajos = ((data as ExistingTrabajo[]) ?? []).filter((trabajo) => {
+    const allTrabajos = (data as ExistingTrabajo[]) ?? [];
+
+    if (isSundayDate(date)) {
+      if (ignoreId) {
+        const ignoredTrabajo = allTrabajos.find(
+          (trabajo) => trabajo.id === ignoreId
+        );
+
+        if (ignoredTrabajo) {
+          return NextResponse.json({
+            date,
+            duration_minutes: durationMinutes,
+            slots: [ignoredTrabajo.start_time],
+            is_non_working_day: true,
+          });
+        }
+      }
+
+      return NextResponse.json(
+        {
+          error:
+            "El domingo está marcado como día de descanso y no ofrece horas disponibles.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const trabajos = allTrabajos.filter((trabajo) => {
       if (!isBlockingStatus(trabajo.status)) return false;
       if (ignoreId && trabajo.id === ignoreId) return false;
       return true;

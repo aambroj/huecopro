@@ -67,11 +67,8 @@ export default function AgendaFilters({
               defaultValue={initialStatus}
               className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
             >
-              {STATUS_OPTIONS.map((option, index) => (
-                <option
-                  key={`status-${option.value || `all-${index}`}`}
-                  value={option.value}
-                >
+              {STATUS_OPTIONS.map((option) => (
+                <option key={`status-${option.value || "all"}`} value={option.value}>
                   {option.label}
                 </option>
               ))}
@@ -87,11 +84,8 @@ export default function AgendaFilters({
             >
               <option value="">Todos los días</option>
 
-              {safeAvailableDays.map((day, index) => (
-                <option
-                  key={`day-${day.value}-${index}`}
-                  value={day.value}
-                >
+              {safeAvailableDays.map((day) => (
+                <option key={`day-${day.value}`} value={day.value}>
                   {day.label}
                 </option>
               ))}
