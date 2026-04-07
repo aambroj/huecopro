@@ -1,7 +1,11 @@
+import Link from "next/link";
+
 type AgendaFiltersProps = {
   initialQuery: string;
   initialStatus: string;
   initialDay: string;
+  initialWeek?: string;
+  initialShared?: string;
   availableDays: Array<{
     value: string;
     label: string;
@@ -17,10 +21,31 @@ const STATUS_OPTIONS = [
   { value: "archivado", label: "Archivado" },
 ];
 
+function buildClearHref(params: {
+  initialWeek?: string;
+  initialShared?: string;
+}) {
+  const search = new URLSearchParams();
+
+  if (params.initialWeek?.trim()) {
+    search.set("week", params.initialWeek.trim());
+    search.set("date", params.initialWeek.trim());
+  }
+
+  if (params.initialShared?.trim()) {
+    search.set("shared", params.initialShared.trim());
+  }
+
+  const queryString = search.toString();
+  return queryString ? `/agenda?${queryString}` : "/agenda";
+}
+
 export default function AgendaFilters({
   initialQuery,
   initialStatus,
   initialDay,
+  initialWeek = "",
+  initialShared = "",
   availableDays,
 }: AgendaFiltersProps) {
   const safeAvailableDays = availableDays
@@ -31,6 +56,11 @@ export default function AgendaFilters({
       (day, index, array) =>
         array.findIndex((item) => item.value === day.value) === index
     );
+
+  const clearHref = buildClearHref({
+    initialWeek,
+    initialShared,
+  });
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -45,7 +75,18 @@ export default function AgendaFilters({
         </div>
       </div>
 
-      <form method="GET" className="mt-5 grid gap-4">
+      <form method="GET" action="/agenda" className="mt-5 grid gap-4">
+        {initialWeek ? (
+          <>
+            <input type="hidden" name="week" value={initialWeek} />
+            <input type="hidden" name="date" value={initialWeek} />
+          </>
+        ) : null}
+
+        {initialShared ? (
+          <input type="hidden" name="shared" value={initialShared} />
+        ) : null}
+
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_1fr_auto]">
           <label className="grid gap-2">
             <span className="text-sm font-medium text-slate-700">
@@ -68,7 +109,10 @@ export default function AgendaFilters({
               className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
             >
               {STATUS_OPTIONS.map((option) => (
-                <option key={`status-${option.value || "all"}`} value={option.value}>
+                <option
+                  key={`status-${option.value || "all"}`}
+                  value={option.value}
+                >
                   {option.label}
                 </option>
               ))}
@@ -100,12 +144,12 @@ export default function AgendaFilters({
               Filtrar
             </button>
 
-            <a
-              href="/"
+            <Link
+              href={clearHref}
               className="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Limpiar
-            </a>
+            </Link>
           </div>
         </div>
       </form>

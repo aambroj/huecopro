@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import InternalTopbar from "@/components/InternalTopbar";
 import ShareAgendaInviteForm from "@/components/ShareAgendaInviteForm";
 import SharedInviteActions from "@/components/SharedInviteActions";
-import SharedLinkActions from "@/components/SharedLinkActions";
+import DeactivateSharedLinkForm from "@/components/DeactivateSharedLinkForm";
+import SharedInvitesRealtimeNotice from "@/components/SharedInvitesRealtimeNotice";
+import SharedReceivedInvitesAutoFocus from "@/components/SharedReceivedInvitesAutoFocus";
 import { getSupabaseServer } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
@@ -17,6 +19,7 @@ export const dynamic = "force-dynamic";
 type InviteRow = {
   id: string;
   inviter_user_id: string;
+  inviter_email: string | null;
   invitee_email: string;
   invitee_user_id: string | null;
   status: string;
@@ -24,6 +27,8 @@ type InviteRow = {
   responded_at: string | null;
   accepted_at: string | null;
   cancelled_at: string | null;
+  alias_for_inviter: string | null;
+  alias_for_invitee: string | null;
 };
 
 type LinkRow = {
@@ -38,6 +43,10 @@ type LinkRow = {
 
 const MADRID_LOCALE = "es-ES";
 const MADRID_TIME_ZONE = "Europe/Madrid";
+
+function normalizeText(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "Sin fecha";
@@ -98,6 +107,77 @@ function getInviteStatusClasses(status: string) {
   return "border-slate-200 bg-slate-50 text-slate-700";
 }
 
+function getSentInviteLabel(invite: InviteRow) {
+  return invite.alias_for_inviter?.trim() || invite.invitee_email;
+}
+
+function getReceivedInviteLabel(invite: InviteRow) {
+  return (
+    invite.alias_for_invitee?.trim() ||
+    invite.inviter_email ||
+    "Otro profesional"
+  );
+}
+
+function shouldShowSecondaryEmailLine(params: {
+  primaryLabel: string;
+  email: string | null | undefined;
+}) {
+  const { primaryLabel, email } = params;
+  const normalizedPrimary = normalizeText(primaryLabel);
+  const normalizedEmail = normalizeText(email);
+
+  return Boolean(
+    normalizedPrimary &&
+      normalizedEmail &&
+      normalizedPrimary !== normalizedEmail
+  );
+}
+
+function getBestLinkLabel(params: {
+  invite: InviteRow | null;
+  normalizedUserEmail: string;
+}) {
+  const { invite, normalizedUserEmail } = params;
+
+  if (!invite) {
+    return "Otro profesional conectado";
+  }
+
+  const inviterEmail = normalizeText(invite.inviter_email);
+  const inviteeEmail = normalizeText(invite.invitee_email);
+  const aliasForInviter = (invite.alias_for_inviter ?? "").trim();
+  const aliasForInvitee = (invite.alias_for_invitee ?? "").trim();
+
+  const currentUserIsInvitee =
+    inviteeEmail && inviteeEmail === normalizedUserEmail;
+
+  const currentUserIsInviter =
+    inviterEmail && inviterEmail === normalizedUserEmail;
+
+  if (currentUserIsInvitee) {
+    if (aliasForInvitee) return aliasForInvitee;
+    if (invite.inviter_email) return invite.inviter_email;
+  }
+
+  if (currentUserIsInviter) {
+    if (aliasForInviter) return aliasForInviter;
+    if (invite.invitee_email) return invite.invitee_email;
+  }
+
+  if (inviteeEmail && inviteeEmail !== normalizedUserEmail) {
+    if (aliasForInviter) return aliasForInviter;
+    return invite.invitee_email;
+  }
+
+  if (inviterEmail && inviterEmail !== normalizedUserEmail) {
+    if (aliasForInvitee) return aliasForInvitee;
+    return invite.inviter_email ?? "Otro profesional conectado";
+  }
+
+  return "Otro profesional conectado";
+}
+
 export default async function CompartirPage() {
   const supabase = await getSupabaseServer();
 
@@ -109,7 +189,7 @@ export default async function CompartirPage() {
     redirect("/login");
   }
 
-  const normalizedUserEmail = (user.email ?? "").trim().toLowerCase();
+  const normalizedUserEmail = normalizeText(user.email);
 
   const { data: sentInvitesData } = await supabase
     .from("shared_agenda_invites")
@@ -141,23 +221,37 @@ export default async function CompartirPage() {
 
   const activeLinks = ((activeLinksData as LinkRow[]) ?? []).filter(Boolean);
 
-  const sentInviteMap = new Map(sentInvites.map((invite) => [invite.id, invite]));
+  const allKnownInvites = [...sentInvites, ...receivedInvites];
+  const inviteMap = new Map(
+    allKnownInvites.map((invite) => [invite.id, invite])
+  );
 
   function getLinkLabel(link: LinkRow) {
-    if (link.created_from_invite_id) {
-      const invite = sentInviteMap.get(link.created_from_invite_id);
-
-      if (invite) {
-        return invite.invitee_email;
-      }
+    if (!link.created_from_invite_id) {
+      return "Otro profesional conectado";
     }
 
-    return "Otro profesional conectado";
+    const invite = inviteMap.get(link.created_from_invite_id) ?? null;
+
+    return getBestLinkLabel({
+      invite,
+      normalizedUserEmail,
+    });
   }
+
+  const activeLinkOptions = activeLinks.map((link) => ({
+    id: link.id,
+    label: getLinkLabel(link),
+    description: `Conexión mutua en solo lectura. Ambos podéis ver la agenda del otro desde ${formatDateTime(
+      link.created_at
+    )}. La conexión seguirá activa aunque cerréis sesión y volváis otro día, hasta que uno de los dos deje de compartir.`,
+  }));
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 sm:px-6">
       <div className="mx-auto max-w-6xl">
+        <SharedInvitesRealtimeNotice userEmail={normalizedUserEmail} />
+        <SharedReceivedInvitesAutoFocus userEmail={normalizedUserEmail} />
         <InternalTopbar />
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -171,8 +265,24 @@ export default async function CompartirPage() {
 
           <p className="mt-4 max-w-3xl text-base text-slate-600 sm:text-lg">
             Conecta tu cuenta con otro profesional para veros mutuamente la
-            agenda en solo lectura. Cada uno mantiene su propia cuenta y podrá
+            agenda en solo lectura.
+            <span className="font-semibold text-slate-800">
+              {" "}
+              Cuando una invitación se acepta, ambas cuentas pueden ver la
+              agenda de la otra
+            </span>
+            . Nadie puede editar la agenda ajena y cualquiera de los dos puede
             dejar de compartir cuando quiera.
+          </p>
+
+          <p className="mt-3 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            La conexión compartida
+            <span className="font-semibold">
+              {" "}
+              no se pierde por cerrar sesión
+            </span>
+            . Seguirá activa aunque volváis al día siguiente, hasta que uno de
+            los dos pulse <span className="font-semibold">“Dejar de compartir”</span>.
           </p>
         </section>
 
@@ -180,14 +290,26 @@ export default async function CompartirPage() {
           <ShareAgendaInviteForm />
         </div>
 
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mt-6">
+          <DeactivateSharedLinkForm links={activeLinkOptions} />
+        </div>
+
+        <section
+          id="invitaciones-recibidas"
+          className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition sm:p-6"
+        >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
                 Invitaciones recibidas
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                Acepta o rechaza invitaciones pendientes para tu correo.
+                Si aceptas una invitación,
+                <span className="font-semibold text-slate-800">
+                  {" "}
+                  tú verás la agenda del otro profesional y él verá la tuya
+                </span>
+                , siempre en solo lectura.
               </p>
             </div>
 
@@ -203,46 +325,77 @@ export default async function CompartirPage() {
             </div>
           ) : (
             <div className="mt-5 grid gap-3">
-              {pendingReceivedInvites.map((invite) => (
-                <article
-                  key={invite.id}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-bold text-slate-900">
-                          Invitación pendiente
+              {pendingReceivedInvites.map((invite) => {
+                const receivedLabel = getReceivedInviteLabel(invite);
+
+                return (
+                  <article
+                    key={invite.id}
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-lg font-bold text-slate-900">
+                            {receivedLabel}
+                          </p>
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
+                              invite.status
+                            )}`}
+                          >
+                            {getInviteStatusLabel(invite.status)}
+                          </span>
+                        </div>
+
+                        {shouldShowSecondaryEmailLine({
+                          primaryLabel: receivedLabel,
+                          email: invite.inviter_email,
+                        }) ? (
+                          <p className="mt-2 text-sm text-slate-600">
+                            Correo del profesional:{" "}
+                            <span className="font-semibold text-slate-800">
+                              {invite.inviter_email}
+                            </span>
+                            .
+                          </p>
+                        ) : null}
+
+                        <p className="mt-2 text-sm text-slate-600">
+                          Esta invitación está asociada a tu correo{" "}
+                          <span className="font-semibold text-slate-800">
+                            {invite.invitee_email}
+                          </span>
+                          .
                         </p>
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
-                            invite.status
-                          )}`}
-                        >
-                          {getInviteStatusLabel(invite.status)}
-                        </span>
+
+                        <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                          Si aceptas, la visibilidad será mutua:
+                          <span className="font-semibold">
+                            {" "}
+                            ambos veréis la agenda del otro en solo lectura
+                          </span>
+                          .
+                        </p>
+
+                        <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                          Después seguirá compartida aunque cerréis sesión, hasta
+                          que uno de los dos deje de compartir.
+                        </p>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Creada el {formatDateTime(invite.created_at)}.
+                        </p>
                       </div>
 
-                      <p className="mt-2 text-sm text-slate-600">
-                        Esta invitación está asociada a tu correo{" "}
-                        <span className="font-semibold text-slate-800">
-                          {invite.invitee_email}
-                        </span>
-                        .
-                      </p>
-
-                      <p className="mt-2 text-sm text-slate-500">
-                        Creada el {formatDateTime(invite.created_at)}.
-                      </p>
+                      <SharedInviteActions
+                        inviteId={invite.id}
+                        variant="received"
+                      />
                     </div>
-
-                    <SharedInviteActions
-                      inviteId={invite.id}
-                      variant="received"
-                    />
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -254,7 +407,12 @@ export default async function CompartirPage() {
                 Invitaciones enviadas
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                Estado actual de las invitaciones que has creado.
+                Cuando la otra persona acepte,
+                <span className="font-semibold text-slate-800">
+                  {" "}
+                  ambos podréis ver la agenda del otro
+                </span>{" "}
+                en solo lectura.
               </p>
             </div>
 
@@ -270,109 +428,93 @@ export default async function CompartirPage() {
             </div>
           ) : (
             <div className="mt-5 grid gap-3">
-              {sentInvites.map((invite) => (
-                <article
-                  key={invite.id}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-bold text-slate-900">
-                          {invite.invitee_email}
+              {sentInvites.map((invite) => {
+                const sentLabel = getSentInviteLabel(invite);
+
+                return (
+                  <article
+                    key={invite.id}
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-lg font-bold text-slate-900">
+                            {sentLabel}
+                          </p>
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
+                              invite.status
+                            )}`}
+                          >
+                            {getInviteStatusLabel(invite.status)}
+                          </span>
+                        </div>
+
+                        {shouldShowSecondaryEmailLine({
+                          primaryLabel: sentLabel,
+                          email: invite.invitee_email,
+                        }) ? (
+                          <p className="mt-2 text-sm text-slate-600">
+                            Correo del profesional:{" "}
+                            <span className="font-semibold text-slate-800">
+                              {invite.invitee_email}
+                            </span>
+                            .
+                          </p>
+                        ) : null}
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Creada el {formatDateTime(invite.created_at)}.
                         </p>
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
-                            invite.status
-                          )}`}
-                        >
-                          {getInviteStatusLabel(invite.status)}
-                        </span>
+
+                        {invite.status === "pending" ? (
+                          <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                            Si la acepta, la conexión será mutua y
+                            <span className="font-semibold">
+                              {" "}
+                              ambos veréis la agenda del otro
+                            </span>
+                            .
+                          </p>
+                        ) : null}
+
+                        {invite.status === "pending" ? (
+                          <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                            Después la conexión seguirá activa aunque cerréis
+                            sesión, hasta que uno de los dos deje de compartir.
+                          </p>
+                        ) : null}
+
+                        {invite.accepted_at ? (
+                          <p className="mt-2 text-sm text-emerald-700">
+                            Aceptada el {formatDateTime(invite.accepted_at)}.
+                          </p>
+                        ) : null}
+
+                        {invite.responded_at && invite.status === "rejected" ? (
+                          <p className="mt-2 text-sm text-slate-600">
+                            Rechazada el {formatDateTime(invite.responded_at)}.
+                          </p>
+                        ) : null}
+
+                        {invite.cancelled_at ? (
+                          <p className="mt-2 text-sm text-red-700">
+                            Cancelada el {formatDateTime(invite.cancelled_at)}.
+                          </p>
+                        ) : null}
                       </div>
 
-                      <p className="mt-2 text-sm text-slate-500">
-                        Creada el {formatDateTime(invite.created_at)}.
-                      </p>
-
-                      {invite.accepted_at ? (
-                        <p className="mt-2 text-sm text-emerald-700">
-                          Aceptada el {formatDateTime(invite.accepted_at)}.
-                        </p>
-                      ) : null}
-
-                      {invite.responded_at && invite.status === "rejected" ? (
-                        <p className="mt-2 text-sm text-slate-600">
-                          Rechazada el {formatDateTime(invite.responded_at)}.
-                        </p>
-                      ) : null}
-
-                      {invite.cancelled_at ? (
-                        <p className="mt-2 text-sm text-red-700">
-                          Cancelada el {formatDateTime(invite.cancelled_at)}.
-                        </p>
+                      {invite.status === "pending" ? (
+                        <SharedInviteActions
+                          inviteId={invite.id}
+                          variant="sent"
+                        />
                       ) : null}
                     </div>
-
-                    {invite.status === "pending" ? (
-                      <SharedInviteActions
-                        inviteId={invite.id}
-                        variant="sent"
-                      />
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
-                Conexiones activas
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Relaciones de agenda compartida activas en este momento.
-              </p>
-            </div>
-
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-              {activeLinks.length} activa
-              {activeLinks.length === 1 ? "" : "s"}
-            </span>
-          </div>
-
-          {activeLinks.length === 0 ? (
-            <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-base font-semibold text-slate-600">
-              No tienes conexiones compartidas activas.
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3">
-              {activeLinks.map((link) => (
-                <article
-                  key={link.id}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <p className="text-lg font-bold text-slate-900">
-                        {getLinkLabel(link)}
-                      </p>
-
-                      <p className="mt-2 text-sm text-slate-600">
-                        Agenda compartida en solo lectura.
-                      </p>
-
-                      <p className="mt-2 text-sm text-slate-500">
-                        Activa desde {formatDateTime(link.created_at)}.
-                      </p>
-                    </div>
-
-                    <SharedLinkActions linkId={link.id} />
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>

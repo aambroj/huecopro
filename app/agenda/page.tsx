@@ -7,6 +7,7 @@ import JobActions from "@/components/JobActions";
 import EditJobButton from "@/components/EditJobButton";
 import AgendaFilters from "@/components/AgendaFilters";
 import SharedAgendaSelector from "@/components/SharedAgendaSelector";
+import AgendaAutoRefresh from "@/components/AgendaAutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -77,10 +78,13 @@ type LinkRow = {
 type InviteRow = {
   id: string;
   inviter_user_id: string;
+  inviter_email: string | null;
   invitee_email: string;
   invitee_user_id: string | null;
   status: string;
   created_at: string;
+  alias_for_inviter: string | null;
+  alias_for_invitee: string | null;
 };
 
 type AgendaOwner = {
@@ -277,7 +281,9 @@ function formatStatusMoment(value: string | null | undefined) {
     hourCycle: "h23",
   });
 
-  return `${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)} · ${timeLabel}`;
+  return `${
+    dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)
+  } · ${timeLabel}`;
 }
 
 function isSundayDate(dateValue: string) {
@@ -665,7 +671,12 @@ function getSuggestedDurationForGap(gapMinutes: number) {
   return gapMinutes;
 }
 
-function buildQuickAddHref(date: string, time: string, duration: number) {
+function buildQuickAddHref(
+  date: string,
+  time: string,
+  duration: number,
+  sharedUserId?: string
+) {
   const params = new URLSearchParams({
     week: date,
     date,
@@ -674,14 +685,26 @@ function buildQuickAddHref(date: string, time: string, duration: number) {
     quick: "1",
   });
 
+  if (sharedUserId?.trim()) {
+    params.set("shared", sharedUserId.trim());
+  }
+
   return `/agenda?${params.toString()}#quick-add-job-form`;
 }
 
-function buildTrabajoHref(jobId: number, weekDate: string) {
+function buildTrabajoHref(
+  jobId: number,
+  weekDate: string,
+  sharedUserId?: string
+) {
   const params = new URLSearchParams({
     week: weekDate,
     edit: String(jobId),
   });
+
+  if (sharedUserId?.trim()) {
+    params.set("shared", sharedUserId.trim());
+  }
 
   return `/agenda?${params.toString()}#trabajo-${jobId}`;
 }
@@ -901,7 +924,9 @@ function buildTimelineGuideMarks(
     const isHour = current % 60 === 0;
     marks.push({
       label:
-        current === visibleStartMinutes || isHour ? minutesToTime(current) : null,
+        current === visibleStartMinutes || isHour
+          ? minutesToTime(current)
+          : null,
       offsetMinutes: current - visibleStartMinutes,
       major: isHour || current === visibleStartMinutes,
     });
@@ -1499,25 +1524,50 @@ function getSharedAgendaLabel(params: {
   const otherUserId =
     link.user_a_id === currentUserId ? link.user_b_id : link.user_a_id;
 
-  if (invite) {
-    const normalizedInviteeEmail = normalizeText(invite.invitee_email);
-    const normalizedCurrentEmail = normalizeText(currentUserEmail);
+  if (!invite) {
+    return {
+      userId: otherUserId,
+      label: "Agenda compartida",
+    };
+  }
 
-    if (
-      invite.inviter_user_id === currentUserId &&
-      normalizedInviteeEmail &&
-      normalizedInviteeEmail !== normalizedCurrentEmail
-    ) {
-      return {
-        userId: otherUserId,
-        label: invite.invitee_email,
-      };
-    }
+  const normalizedCurrentEmail = normalizeText(currentUserEmail);
+  const normalizedInviterEmail = normalizeText(invite.inviter_email ?? "");
+  const normalizedInviteeEmail = normalizeText(invite.invitee_email);
+
+  const aliasForInviter = (invite.alias_for_inviter ?? "").trim();
+  const aliasForInvitee = (invite.alias_for_invitee ?? "").trim();
+
+  const currentUserIsInviter =
+    invite.inviter_user_id === currentUserId ||
+    normalizedInviterEmail === normalizedCurrentEmail;
+
+  const currentUserIsInvitee =
+    invite.invitee_user_id === currentUserId ||
+    normalizedInviteeEmail === normalizedCurrentEmail;
+
+  if (currentUserIsInviter) {
+    return {
+      userId: otherUserId,
+      label: aliasForInviter || invite.invitee_email || "Agenda compartida",
+    };
+  }
+
+  if (currentUserIsInvitee) {
+    return {
+      userId: otherUserId,
+      label: aliasForInvitee || invite.inviter_email || "Agenda compartida",
+    };
   }
 
   return {
     userId: otherUserId,
-    label: "Agenda compartida",
+    label:
+      aliasForInviter ||
+      aliasForInvitee ||
+      invite.invitee_email ||
+      invite.inviter_email ||
+      "Agenda compartida",
   };
 }
 
@@ -1531,21 +1581,34 @@ function renderSharedAgendaSection(params: {
   const { owner, data, hasActiveFilters, errorMessage } = params;
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section className="mt-8 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4 sm:px-5">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Solo lectura
+        </p>
+        <p className="mt-2 text-lg font-bold text-slate-900 sm:text-xl">
+          Estás viendo la agenda de {owner.label}
+        </p>
+        <p className="mt-1 text-sm text-slate-600 sm:text-base">
+          Puedes consultarla completa, pero no editar trabajos, no cambiar
+          estados y no tocar la agenda ajena.
+        </p>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Agenda compartida
           </p>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Agenda compartida con {owner.label}
+            Agenda de {owner.label}
           </h2>
           <p className="mt-2 text-sm text-slate-600 sm:text-base">
             Vista en solo lectura de la agenda del profesional conectado.
           </p>
         </div>
 
-        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+        <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700">
           Solo lectura
         </span>
       </div>
@@ -1739,7 +1802,8 @@ function renderSharedAgendaSection(params: {
                         {dayItem.blockingItems.map((trabajo) => {
                           const startMinutes = timeToMinutes(trabajo.start_time);
                           const endMinutes =
-                            startMinutes + Number(trabajo.duration_minutes || 0);
+                            startMinutes +
+                            Number(trabajo.duration_minutes || 0);
 
                           return (
                             <div
@@ -1888,7 +1952,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         ? day
         : agendaStartDateInMadrid;
 
-  const normalizedUserEmail = (user.email ?? "").trim().toLowerCase();
+  const normalizedUserEmail = normalizeText(user.email);
 
   const { data: activeLinksData, error: activeLinksError } = await supabase
     .from("shared_agenda_links")
@@ -1905,10 +1969,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const { data: inviteData, error: inviteError } =
     inviteIds.length === 0
       ? { data: [] as InviteRow[], error: null }
-      : await supabase
-          .from("shared_agenda_invites")
-          .select("*")
-          .in("id", inviteIds);
+      : await supabase.from("shared_agenda_invites").select("*").in("id", inviteIds);
 
   const inviteMap = new Map(
     (((inviteData as InviteRow[]) ?? []).filter(Boolean) as InviteRow[]).map(
@@ -1952,8 +2013,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     ),
   ];
 
-  const selectedSharedUserId =
-    requestedShared || sharedOwners[0]?.userId || "";
+  const selectedSharedUserId = requestedShared || sharedOwners[0]?.userId || "";
 
   const ownerIds = uniqueOwners.map((owner) => owner.userId);
 
@@ -2056,6 +2116,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <InternalTopbar />
+        <AgendaAutoRefresh ownerIds={ownerIds} intervalMs={3000} />
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -2078,14 +2139,42 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 de {WORK_DAY_START} a {WORK_DAY_END}.
               </p>
 
-              {sharedOwners.length > 0 ? (
-                <p className="mt-3 text-sm font-medium text-sky-700">
-                  También tienes {sharedOwners.length} agenda
-                  {sharedOwners.length === 1 ? "" : "s"} compartida
-                  {sharedOwners.length === 1 ? "" : "s"} en solo lectura más
-                  abajo.
-                </p>
-              ) : null}
+              <div
+                className={`mt-5 grid gap-3 ${
+                  sharedOwners.length > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1"
+                }`}
+              >
+                <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                    Tu zona
+                  </p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">
+                    Mi agenda · editable
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Aquí puedes crear trabajos, editar, cambiar estados y moverte
+                    con total normalidad.
+                  </p>
+                </div>
+
+                {sharedOwners.length > 0 ? (
+                  <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                      Compartida
+                    </p>
+                    <p className="mt-2 text-lg font-bold text-slate-900">
+                      Agenda ajena · solo lectura
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      También puedes consultar{" "}
+                      {sharedOwners.length === 1
+                        ? "1 agenda compartida"
+                        : `${sharedOwners.length} agendas compartidas`}{" "}
+                      más abajo. No podrás editar la agenda del otro.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 sm:items-end">
@@ -2132,6 +2221,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
             initialQuery={query}
             initialStatus={status}
             initialDay={day}
+            initialWeek={anchorDate}
+            initialShared={selectedSharedUserId}
             availableDays={days.map((item) => ({
               value: item.date,
               label: item.label,
@@ -2139,7 +2230,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           />
         </div>
 
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-6 rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
@@ -2635,7 +2726,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                           href={buildQuickAddHref(
                                             dayItem.date,
                                             gap.start,
-                                            suggestedDuration
+                                            suggestedDuration,
+                                            selectedSharedUserId
                                           )}
                                           className="absolute left-3 right-3 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-2 transition hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm"
                                           style={getTimelineGapBlockStyle({
@@ -2729,7 +2821,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                         key={`timeline-job-${trabajo.id}`}
                                         href={buildTrabajoHref(
                                           trabajo.id,
-                                          anchorDate
+                                          anchorDate,
+                                          selectedSharedUserId
                                         )}
                                         className={`absolute left-3 right-3 overflow-hidden rounded-2xl border px-4 py-2 shadow-sm transition hover:shadow-md ${getTimelineJobClasses(
                                           trabajo.status
@@ -2949,7 +3042,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                         href={buildQuickAddHref(
                                           dayItem.date,
                                           gap.start,
-                                          suggestedDuration
+                                          suggestedDuration,
+                                          selectedSharedUserId
                                         )}
                                         className="group min-w-0 rounded-3xl border border-emerald-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50"
                                       >
@@ -3061,19 +3155,31 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               </div>
             ) : null}
 
-            <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <section className="mt-8 rounded-3xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
                     Compartida
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
                     Elige qué agenda compartida quieres ver
                   </h2>
                   <p className="mt-2 text-sm text-slate-600 sm:text-base">
-                    Solo se muestra una agenda compartida cada vez para que la
-                    pantalla quede más limpia.
+                    Aquí siempre estás entrando en una agenda ajena en solo
+                    lectura. Solo se muestra una cada vez para que la pantalla
+                    quede más limpia.
                   </p>
+
+                  {selectedSharedAgenda ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sky-700">
+                        Vista actual: {selectedSharedAgenda.owner.label}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-700">
+                        Solo lectura
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
 
                 <SharedAgendaSelector

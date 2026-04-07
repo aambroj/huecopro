@@ -3,10 +3,18 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 
 type CreateInviteBody = {
   invitee_email?: string;
+  alias_for_inviter?: string;
 };
 
 function normalizeEmail(value: unknown) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function normalizeAlias(value: unknown) {
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim();
+  return normalized ? normalized.slice(0, 60) : null;
 }
 
 export async function POST(request: Request) {
@@ -28,6 +36,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as CreateInviteBody;
     const inviteeEmail = normalizeEmail(body.invitee_email);
     const currentUserEmail = normalizeEmail(user.email);
+    const aliasForInviter = normalizeAlias(body.alias_for_inviter);
 
     if (!inviteeEmail) {
       return NextResponse.json(
@@ -79,7 +88,7 @@ export async function POST(request: Request) {
         inviter_email: currentUserEmail,
         invitee_email: inviteeEmail,
         status: "pending",
-        alias_for_inviter: null,
+        alias_for_inviter: aliasForInviter,
         alias_for_invitee: null,
       })
       .select("*")

@@ -7,8 +7,9 @@ type RouteContext = {
   }>;
 };
 
-type UpdateInviteBody = {
+type PatchInviteBody = {
   action?: "accept" | "reject" | "cancel";
+  alias_for_invitee?: string;
 };
 
 type InviteRow = {
@@ -33,8 +34,11 @@ function normalizeEmail(value: unknown) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
-function sortUserPair(a: string, b: string) {
-  return a < b ? [a, b] : [b, a];
+function normalizeAlias(value: unknown) {
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim();
+  return normalized ? normalized.slice(0, 60) : null;
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
@@ -53,21 +57,20 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const body = (await request.json()) as UpdateInviteBody;
-    const action = body.action;
     const { id } = await context.params;
-    const currentUserEmail = normalizeEmail(user.email);
+    const body = (await request.json()) as PatchInviteBody;
+    const action = body.action;
 
     if (!id) {
       return NextResponse.json(
-        { error: "La invitación no es válida." },
+        { error: "Falta el identificador de la invitación." },
         { status: 400 }
       );
     }
 
     if (!action || !["accept", "reject", "cancel"].includes(action)) {
       return NextResponse.json(
-        { error: "La acción solicitada no es válida." },
+        { error: "Acción no válida." },
         { status: 400 }
       );
     }
@@ -85,199 +88,189 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const inviteRow = invite as InviteRow | null;
-
-    if (!inviteRow) {
+    if (!invite) {
       return NextResponse.json(
-        { error: "No se encontró la invitación." },
+        { error: "La invitación no existe." },
         { status: 404 }
       );
     }
 
-    const isInviter = inviteRow.inviter_user_id === user.id;
-    const isInvitee =
-      normalizeEmail(inviteRow.invitee_email) === currentUserEmail;
-    const now = new Date().toISOString();
+    const typedInvite = invite as InviteRow;
+    const currentUserEmail = normalizeEmail(user.email);
+
+    const currentUserIsInviter = typedInvite.inviter_user_id === user.id;
+    const currentUserIsInvitee =
+      typedInvite.invitee_user_id === user.id ||
+      normalizeEmail(typedInvite.invitee_email) === currentUserEmail;
 
     if (action === "cancel") {
-      if (!isInviter) {
+      if (!currentUserIsInviter) {
         return NextResponse.json(
-          { error: "Solo quien envía la invitación puede cancelarla." },
+          { error: "Solo quien envió la invitación puede cancelarla." },
           { status: 403 }
         );
       }
 
-      if (inviteRow.status !== "pending") {
+      if (typedInvite.status !== "pending") {
         return NextResponse.json(
-          { error: "Solo se puede cancelar una invitación pendiente." },
-          { status: 400 }
+          { error: "Solo se pueden cancelar invitaciones pendientes." },
+          { status: 409 }
         );
       }
 
-      const { data, error } = await supabase
+      const { error: updateError } = await supabase
         .from("shared_agenda_invites")
         .update({
           status: "cancelled",
-          responded_at: now,
-          cancelled_at: now,
+          responded_at: new Date().toISOString(),
+          cancelled_at: new Date().toISOString(),
           cancelled_by_user_id: user.id,
         })
-        .eq("id", inviteRow.id)
-        .select("*")
-        .maybeSingle();
+        .eq("id", typedInvite.id);
 
-      if (error) {
+      if (updateError) {
         return NextResponse.json(
-          { error: error.message || "No se pudo cancelar la invitación." },
+          { error: updateError.message || "No se pudo cancelar la invitación." },
           { status: 500 }
         );
       }
 
-      return NextResponse.json({ ok: true, invite: data });
+      return NextResponse.json({ ok: true });
     }
 
     if (action === "reject") {
-      if (!isInvitee) {
+      if (!currentUserIsInvitee) {
         return NextResponse.json(
-          { error: "Solo el destinatario puede rechazar la invitación." },
+          { error: "Solo quien la recibe puede rechazar la invitación." },
           { status: 403 }
         );
       }
 
-      if (inviteRow.status !== "pending") {
+      if (typedInvite.status !== "pending") {
         return NextResponse.json(
-          { error: "Solo se puede rechazar una invitación pendiente." },
-          { status: 400 }
+          { error: "Solo se pueden rechazar invitaciones pendientes." },
+          { status: 409 }
         );
       }
 
-      const { data, error } = await supabase
+      const { error: updateError } = await supabase
         .from("shared_agenda_invites")
         .update({
           status: "rejected",
-          responded_at: now,
           invitee_user_id: user.id,
+          responded_at: new Date().toISOString(),
         })
-        .eq("id", inviteRow.id)
-        .select("*")
-        .maybeSingle();
+        .eq("id", typedInvite.id);
 
-      if (error) {
+      if (updateError) {
         return NextResponse.json(
-          { error: error.message || "No se pudo rechazar la invitación." },
+          { error: updateError.message || "No se pudo rechazar la invitación." },
           { status: 500 }
         );
       }
 
-      return NextResponse.json({ ok: true, invite: data });
+      return NextResponse.json({ ok: true });
     }
 
-    if (action === "accept") {
-      if (!isInvitee) {
-        return NextResponse.json(
-          { error: "Solo el destinatario puede aceptar la invitación." },
-          { status: 403 }
-        );
-      }
+    if (!currentUserIsInvitee) {
+      return NextResponse.json(
+        { error: "Solo quien la recibe puede aceptar la invitación." },
+        { status: 403 }
+      );
+    }
 
-      if (inviteRow.status !== "pending") {
-        return NextResponse.json(
-          { error: "Solo se puede aceptar una invitación pendiente." },
-          { status: 400 }
-        );
-      }
+    if (typedInvite.status !== "pending") {
+      return NextResponse.json(
+        { error: "Solo se pueden aceptar invitaciones pendientes." },
+        { status: 409 }
+      );
+    }
 
-      const [userA, userB] = sortUserPair(inviteRow.inviter_user_id, user.id);
+    const aliasForInvitee = normalizeAlias(body.alias_for_invitee);
 
-      const { data: existingLink, error: existingLinkError } = await supabase
+    const { data: existingLink, error: existingLinkError } = await supabase
+      .from("shared_agenda_links")
+      .select("*")
+      .or(
+        `and(user_a_id.eq.${typedInvite.inviter_user_id},user_b_id.eq.${user.id}),and(user_a_id.eq.${user.id},user_b_id.eq.${typedInvite.inviter_user_id})`
+      )
+      .maybeSingle();
+
+    if (existingLinkError) {
+      return NextResponse.json(
+        {
+          error:
+            existingLinkError.message ||
+            "No se pudo comprobar la conexión compartida.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (existingLink) {
+      const typedLink = existingLink as LinkRow;
+
+      const { error: reactivateError } = await supabase
         .from("shared_agenda_links")
-        .select("*")
-        .eq("user_a_id", userA)
-        .eq("user_b_id", userB)
-        .maybeSingle();
+        .update({
+          is_active: true,
+          created_from_invite_id: typedInvite.id,
+          deactivated_at: null,
+          deactivated_by_user_id: null,
+        })
+        .eq("id", typedLink.id);
 
-      if (existingLinkError) {
+      if (reactivateError) {
         return NextResponse.json(
           {
             error:
-              existingLinkError.message ||
-              "No se pudo comprobar la conexión compartida.",
+              reactivateError.message ||
+              "No se pudo reactivar la conexión compartida.",
           },
           { status: 500 }
         );
       }
+    } else {
+      const { error: insertLinkError } = await supabase
+        .from("shared_agenda_links")
+        .insert({
+          user_a_id: typedInvite.inviter_user_id,
+          user_b_id: user.id,
+          created_from_invite_id: typedInvite.id,
+          is_active: true,
+        });
 
-      const existingLinkRow = existingLink as LinkRow | null;
-
-      if (existingLinkRow) {
-        const { error: linkUpdateError } = await supabase
-          .from("shared_agenda_links")
-          .update({
-            is_active: true,
-            created_from_invite_id: inviteRow.id,
-            deactivated_at: null,
-            deactivated_by_user_id: null,
-          })
-          .eq("id", existingLinkRow.id);
-
-        if (linkUpdateError) {
-          return NextResponse.json(
-            {
-              error:
-                linkUpdateError.message ||
-                "No se pudo reactivar la conexión compartida.",
-            },
-            { status: 500 }
-          );
-        }
-      } else {
-        const { error: linkInsertError } = await supabase
-          .from("shared_agenda_links")
-          .insert({
-            user_a_id: userA,
-            user_b_id: userB,
-            created_from_invite_id: inviteRow.id,
-            is_active: true,
-          });
-
-        if (linkInsertError) {
-          return NextResponse.json(
-            {
-              error:
-                linkInsertError.message ||
-                "No se pudo crear la conexión compartida.",
-            },
-            { status: 500 }
-          );
-        }
-      }
-
-      const { data, error } = await supabase
-        .from("shared_agenda_invites")
-        .update({
-          status: "accepted",
-          invitee_user_id: user.id,
-          responded_at: now,
-          accepted_at: now,
-        })
-        .eq("id", inviteRow.id)
-        .select("*")
-        .maybeSingle();
-
-      if (error) {
+      if (insertLinkError) {
         return NextResponse.json(
-          { error: error.message || "No se pudo aceptar la invitación." },
+          {
+            error:
+              insertLinkError.message ||
+              "No se pudo crear la conexión compartida.",
+          },
           { status: 500 }
         );
       }
-
-      return NextResponse.json({ ok: true, invite: data });
     }
 
-    return NextResponse.json(
-      { error: "La acción solicitada no es válida." },
-      { status: 400 }
-    );
+    const { error: acceptError } = await supabase
+      .from("shared_agenda_invites")
+      .update({
+        status: "accepted",
+        invitee_user_id: user.id,
+        accepted_at: new Date().toISOString(),
+        responded_at: new Date().toISOString(),
+        alias_for_invitee: aliasForInvitee,
+      })
+      .eq("id", typedInvite.id);
+
+    if (acceptError) {
+      return NextResponse.json(
+        { error: acceptError.message || "No se pudo aceptar la invitación." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
       { error: "No se pudo actualizar la invitación." },
