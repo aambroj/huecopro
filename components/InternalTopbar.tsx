@@ -137,7 +137,7 @@ export default function InternalTopbar() {
 
             <div>
               <p className="text-base font-black leading-none text-slate-900">
-                HuecoPro
+                AutonomoAgenda
               </p>
               <p className="mt-1 text-xs font-medium text-slate-500">
                 Agenda de trabajo

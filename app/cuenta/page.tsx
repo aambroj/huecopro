@@ -7,7 +7,7 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Cuenta",
-  description: "Cuenta de usuario en HuecoPro.",
+  description: "Cuenta de usuario en AutonomoAgenda.",
 };
 
 export const dynamic = "force-dynamic";
@@ -86,7 +86,7 @@ export default async function CuentaPage() {
 
             <p className="mt-3 max-w-3xl text-sm leading-6 text-amber-900 sm:text-base">
               La parte del cobro mensual todavía no se cancela desde aquí porque
-              Stripe aún no está montado en HuecoPro.
+              Stripe aún no está montado en AutonomoAgenda.
             </p>
           </section>
 

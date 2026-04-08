@@ -75,7 +75,7 @@ export default function DeleteAccountForm() {
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-red-900 sm:text-base">
             La cancelación del cobro mensual todavía no está conectada aquí
-            porque Stripe aún no está montado en HuecoPro.
+            porque Stripe aún no está montado en AutonomoAgenda.
           </p>
         </div>
 

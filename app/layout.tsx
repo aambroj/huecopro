@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "HuecoPro | La forma rápida de encajar trabajos",
-    template: "%s | HuecoPro",
+    default: "AutonomoAgenda | La agenda más simple para autónomos",
+    template: "%s | AutonomoAgenda",
   },
   description:
-    "Agenda simple y visual para autónomos de reparaciones, instalaciones y reformas. Detecta huecos libres, encaja trabajos y organiza tu jornada sin complicaciones.",
+    "Agenda simple y visual para autónomos de reparaciones, electricistas, fontaneros, instalaciones y reformas. Detecta huecos libres, encaja trabajos y organiza tu jornada sin complicaciones.",
 };
 
 export default function RootLayout({

@@ -4,9 +4,9 @@ import Link from "next/link";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "HuecoPro | La forma rápida de encajar trabajos",
+  title: "AutonomoAgenda | La agenda más simple para autónomos",
   description:
-    "Agenda simple y visual para autónomos de reparaciones, instalaciones y reformas. Encaja trabajos rápido, detecta huecos libres y trabaja sin complicaciones.",
+    "Agenda simple y visual para autónomos de reparaciones, electricistas, fontaneros, instalaciones y reformas. Encaja trabajos rápido, detecta huecos libres y trabaja sin complicaciones.",
 };
 
 const benefits = [
@@ -71,10 +71,10 @@ export default function HomePage() {
 
             <div>
               <p className="text-base font-black leading-none text-slate-900">
-                HuecoPro
+                AutonomoAgenda
               </p>
               <p className="mt-1 text-xs font-medium text-slate-500">
-                La forma rápida de encajar trabajos
+                La agenda más simple para autónomos
               </p>
             </div>
           </Link>
@@ -109,7 +109,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
-              HuecoPro está pensado para autónomos que necesitan ver rápido sus
+              AutonomoAgenda está pensado para autónomos que necesitan ver rápido sus
               próximos huecos, apuntar trabajos sin perder tiempo y mantener su
               jornada ordenada de forma simple.
             </p>
@@ -239,7 +239,7 @@ export default function HomePage() {
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
               La portada sirve para explicar y captar. La cuenta sirve para
-              trabajar. Así HuecoPro sigue siendo sencillo, rápido y fácil de
+              trabajar. Así AutonomoAgenda sigue siendo sencillo, rápido y fácil de
               entender.
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-4 text-base leading-7 text-slate-300 sm:text-lg">
-              HuecoPro está pensado para que cada profesional tenga su propia
+              AutonomoAgenda está pensado para que cada profesional tenga su propia
               agenda y, si ambos tienen cuenta activa, puedan verse en modo solo
               lectura. Sin editar la agenda ajena. Sin perder control. Y con
               opción de dejar de compartir cuando quieran.

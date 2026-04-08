@@ -80,7 +80,7 @@ export default function LoginPageClient() {
             </Link>
 
             <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              HuecoPro
+              AutonomoAgenda
             </p>
 
             <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">

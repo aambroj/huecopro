@@ -11,7 +11,7 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Compartir",
-  description: "Compartir agenda con otros profesionales en HuecoPro.",
+  description: "Compartir agenda con otros profesionales en AutonomoAgenda.",
 };
 
 export const dynamic = "force-dynamic";
