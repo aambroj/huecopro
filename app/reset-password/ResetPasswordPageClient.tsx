@@ -2,19 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 function getFriendlyErrorMessage(message: string) {
-  const normalized = message.toLowerCase();
+  const normalized = message.toLowerCase().trim();
 
-  if (normalized.includes("same password")) {
-    return "La nueva contraseña no puede ser igual que la anterior.";
+  if (
+    normalized.includes("new password should be different from the old password") ||
+    normalized.includes("different from the old password") ||
+    normalized.includes("same password") ||
+    normalized.includes("old password")
+  ) {
+    return "La nueva contraseña debe ser diferente de la anterior.";
   }
 
   if (
     normalized.includes("password should be at least") ||
-    normalized.includes("weak password")
+    normalized.includes("weak password") ||
+    normalized.includes("password is too weak")
   ) {
     return "La contraseña debe ser más segura.";
   }
@@ -24,15 +30,18 @@ function getFriendlyErrorMessage(message: string) {
     normalized.includes("expired") ||
     normalized.includes("invalid")
   ) {
-    return "El enlace ya no es válido o ha caducado. Vuelve a pedir uno nuevo.";
+    return "El enlace de recuperación ya no es válido o ha caducado. Vuelve a pedir uno nuevo.";
   }
 
-  return message || "No se pudo cambiar la contraseña.";
+  if (normalized.includes("pkce")) {
+    return "No se pudo validar el enlace de recuperación. Pide uno nuevo e inténtalo otra vez.";
+  }
+
+  return "No se pudo cambiar la contraseña. Inténtalo de nuevo.";
 }
 
 export default function ResetPasswordPageClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = useMemo(() => getSupabaseBrowser(), []);
 
   const [password, setPassword] = useState("");
@@ -45,74 +54,33 @@ export default function ResetPasswordPageClient() {
     "Comprobando el enlace de recuperación..."
   );
 
-  const code = searchParams.get("code");
-
   useEffect(() => {
     let isMounted = true;
 
-    async function prepareRecoverySession() {
-      try {
-        setCheckingLink(true);
-        setErrorMessage("");
-        setInfoMessage("Comprobando el enlace de recuperación...");
+    async function checkRecoveryAccess() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!isMounted) return;
 
-          if (error) {
-            throw error;
-          }
-
-          if (!isMounted) return;
-
-          setLinkReady(true);
-          setInfoMessage(
-            "Ya puedes escribir una contraseña nueva para tu cuenta."
-          );
-
-          const nextUrl = new URL(window.location.href);
-          nextUrl.searchParams.delete("code");
-          window.history.replaceState({}, "", nextUrl.toString());
-
-          return;
-        }
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!isMounted) return;
-
-        if (session) {
-          setLinkReady(true);
-          setInfoMessage(
-            "Ya puedes escribir una contraseña nueva para tu cuenta."
-          );
-        } else {
-          setLinkReady(false);
-          setInfoMessage(
-            "Abre el enlace que te llegó por correo para poder cambiar la contraseña."
-          );
-        }
-      } catch (error) {
-        if (!isMounted) return;
-
-        const message =
-          error instanceof Error
-            ? getFriendlyErrorMessage(error.message)
-            : "El enlace ya no es válido o ha caducado. Vuelve a pedir uno nuevo.";
-
-        setLinkReady(false);
-        setErrorMessage(message);
-        setInfoMessage("");
-      } finally {
-        if (isMounted) {
-          setCheckingLink(false);
-        }
+      if (session) {
+        setLinkReady(true);
+        setCheckingLink(false);
+        setInfoMessage(
+          "Ya puedes escribir una contraseña nueva para tu cuenta."
+        );
+        return;
       }
+
+      setCheckingLink(false);
+      setLinkReady(false);
+      setInfoMessage(
+        "Abre el enlace que te llegó por correo para poder cambiar la contraseña."
+      );
     }
 
-    prepareRecoverySession();
+    checkRecoveryAccess();
 
     const {
       data: { subscription },
@@ -136,7 +104,7 @@ export default function ResetPasswordPageClient() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, code]);
+  }, [supabase]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -176,12 +144,16 @@ export default function ResetPasswordPageClient() {
       router.replace("/login?passwordUpdated=1");
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? getFriendlyErrorMessage(error.message)
-          : "No se pudo cambiar la contraseña.";
+      if (error instanceof Error) {
+        console.error("Reset password error:", error.message);
+        setErrorMessage(getFriendlyErrorMessage(error.message));
+      } else {
+        console.error("Reset password unknown error:", error);
+        setErrorMessage(
+          "No se pudo cambiar la contraseña. Inténtalo de nuevo."
+        );
+      }
 
-      setErrorMessage(message);
       setSubmitting(false);
     }
   }

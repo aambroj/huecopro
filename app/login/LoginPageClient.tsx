@@ -29,6 +29,16 @@ function getFriendlyErrorMessage(message: string) {
   return message || "No se pudo iniciar sesión.";
 }
 
+function getRecoveryErrorMessage(errorCode: string | null) {
+  if (!errorCode) return "";
+
+  if (errorCode === "invalid_recovery_link") {
+    return "El enlace de recuperación no es válido o ha caducado. Pide uno nuevo.";
+  }
+
+  return "";
+}
+
 export default function LoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,6 +58,7 @@ export default function LoginPageClient() {
   const registered = searchParams.get("registered") === "1";
   const resetSent = searchParams.get("resetSent") === "1";
   const passwordUpdated = searchParams.get("passwordUpdated") === "1";
+  const recoveryErrorMessage = getRecoveryErrorMessage(searchParams.get("error"));
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,6 +130,12 @@ export default function LoginPageClient() {
           {passwordUpdated ? (
             <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
               Contraseña actualizada correctamente. Ya puedes entrar.
+            </div>
+          ) : null}
+
+          {recoveryErrorMessage ? (
+            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {recoveryErrorMessage}
             </div>
           ) : null}
 
@@ -209,7 +226,12 @@ export default function LoginPageClient() {
           </form>
 
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Tu usuario es el <span className="font-semibold text-slate-900">email con el que te registraste</span>. Si no recuerdas cuál era, prueba con tus correos habituales o usa la recuperación de contraseña.
+            Tu usuario es el{" "}
+            <span className="font-semibold text-slate-900">
+              email con el que te registraste
+            </span>
+            . Si no recuerdas cuál era, prueba con tus correos habituales o usa
+            la recuperación de contraseña.
           </div>
 
           <p className="mt-5 text-sm text-slate-600">
