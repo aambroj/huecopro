@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import InstallAppButton from "@/components/InstallAppButton";
 
 export const dynamic = "force-static";
 
@@ -148,7 +149,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/registro"
                 className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white transition hover:bg-slate-800"
@@ -162,6 +163,8 @@ export default function HomePage() {
               >
                 Ya tengo cuenta
               </Link>
+
+              <InstallAppButton />
             </div>
 
             <p className="mt-4 text-sm text-slate-500">
@@ -476,7 +479,7 @@ export default function HomePage() {
             estado sin complicaciones.
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/registro"
               className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white transition hover:bg-slate-800"
@@ -490,6 +493,8 @@ export default function HomePage() {
             >
               Entrar a mi cuenta
             </Link>
+
+            <InstallAppButton />
           </div>
         </div>
       </section>
