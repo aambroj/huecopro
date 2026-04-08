@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "AutonomoAgenda",
-    short_name: "AutonomoAgenda",
+    name: "Autonomo Agenda",
+    short_name: "Autonomo Agenda",
     description:
       "Agenda simple y visual para autónomos de reparaciones, instalaciones, fontanería, electricidad y reformas.",
     start_url: "/agenda",

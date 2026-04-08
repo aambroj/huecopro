@@ -31,7 +31,7 @@ export default function PasswordField({
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between gap-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <label
           htmlFor={inputId}
           className="block text-sm font-semibold text-slate-700"
