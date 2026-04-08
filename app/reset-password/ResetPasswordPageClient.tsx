@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 function getFriendlyErrorMessage(message: string) {
@@ -19,7 +19,11 @@ function getFriendlyErrorMessage(message: string) {
     return "La contraseña debe ser más segura.";
   }
 
-  if (normalized.includes("session")) {
+  if (
+    normalized.includes("session") ||
+    normalized.includes("expired") ||
+    normalized.includes("invalid")
+  ) {
     return "El enlace ya no es válido o ha caducado. Vuelve a pedir uno nuevo.";
   }
 
@@ -28,6 +32,7 @@ function getFriendlyErrorMessage(message: string) {
 
 export default function ResetPasswordPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = useMemo(() => getSupabaseBrowser(), []);
 
   const [password, setPassword] = useState("");
@@ -40,33 +45,74 @@ export default function ResetPasswordPageClient() {
     "Comprobando el enlace de recuperación..."
   );
 
+  const code = searchParams.get("code");
+
   useEffect(() => {
     let isMounted = true;
 
-    async function checkRecoveryAccess() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    async function prepareRecoverySession() {
+      try {
+        setCheckingLink(true);
+        setErrorMessage("");
+        setInfoMessage("Comprobando el enlace de recuperación...");
 
-      if (!isMounted) return;
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-      if (session) {
-        setLinkReady(true);
-        setCheckingLink(false);
-        setInfoMessage(
-          "Ya puedes escribir una contraseña nueva para tu cuenta."
-        );
-        return;
+          if (error) {
+            throw error;
+          }
+
+          if (!isMounted) return;
+
+          setLinkReady(true);
+          setInfoMessage(
+            "Ya puedes escribir una contraseña nueva para tu cuenta."
+          );
+
+          const nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.delete("code");
+          window.history.replaceState({}, "", nextUrl.toString());
+
+          return;
+        }
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
+        if (session) {
+          setLinkReady(true);
+          setInfoMessage(
+            "Ya puedes escribir una contraseña nueva para tu cuenta."
+          );
+        } else {
+          setLinkReady(false);
+          setInfoMessage(
+            "Abre el enlace que te llegó por correo para poder cambiar la contraseña."
+          );
+        }
+      } catch (error) {
+        if (!isMounted) return;
+
+        const message =
+          error instanceof Error
+            ? getFriendlyErrorMessage(error.message)
+            : "El enlace ya no es válido o ha caducado. Vuelve a pedir uno nuevo.";
+
+        setLinkReady(false);
+        setErrorMessage(message);
+        setInfoMessage("");
+      } finally {
+        if (isMounted) {
+          setCheckingLink(false);
+        }
       }
-
-      setCheckingLink(false);
-      setLinkReady(false);
-      setInfoMessage(
-        "Abre el enlace que te llegó por correo para poder cambiar la contraseña."
-      );
     }
 
-    checkRecoveryAccess();
+    prepareRecoverySession();
 
     const {
       data: { subscription },
@@ -90,7 +136,7 @@ export default function ResetPasswordPageClient() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, code]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
