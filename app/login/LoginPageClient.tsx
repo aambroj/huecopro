@@ -59,7 +59,9 @@ export default function LoginPageClient() {
   const registered = searchParams.get("registered") === "1";
   const resetSent = searchParams.get("resetSent") === "1";
   const passwordUpdated = searchParams.get("passwordUpdated") === "1";
-  const recoveryErrorMessage = getRecoveryErrorMessage(searchParams.get("error"));
+  const recoveryErrorMessage = getRecoveryErrorMessage(
+    searchParams.get("error")
+  );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -90,9 +92,9 @@ export default function LoginPageClient() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 sm:py-14">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-md">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
           <div className="mb-6">
             <Link
               href="/"
@@ -176,19 +178,6 @@ export default function LoginPageClient() {
             </div>
 
             <div>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="block text-sm font-semibold text-slate-700">
-                  Contraseña
-                </span>
-
-                <Link
-                  href="/recuperar-contrasena"
-                  className="text-sm font-semibold text-slate-700 underline underline-offset-4 transition hover:text-slate-900"
-                >
-                  He olvidado mi contraseña
-                </Link>
-              </div>
-
               <PasswordField
                 id="password"
                 label="Contraseña"
@@ -201,13 +190,22 @@ export default function LoginPageClient() {
                 autoComplete="current-password"
                 required
               />
+
+              <div className="mt-2 flex justify-end">
+                <Link
+                  href="/recuperar-contrasena"
+                  className="text-sm font-semibold text-slate-700 underline underline-offset-4 transition hover:text-slate-900"
+                >
+                  He olvidado mi contraseña
+                </Link>
+              </div>
             </div>
 
             <div className="mt-2 flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-base font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-base font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "Entrando..." : "Entrar"}
               </button>
@@ -215,7 +213,7 @@ export default function LoginPageClient() {
               <button
                 type="button"
                 onClick={handleUseAnotherEmail}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Usar otro email
               </button>
