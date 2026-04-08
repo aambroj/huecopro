@@ -20,6 +20,32 @@ export const metadata: Metadata = {
   },
   description:
     "Agenda simple y visual para autónomos de reparaciones, electricistas, fontaneros, instalaciones y reformas. Detecta huecos libres, encaja trabajos y organiza tu jornada sin complicaciones.",
+  applicationName: "AutonomoAgenda",
+  keywords: [
+    "agenda para autónomos",
+    "agenda electricistas",
+    "agenda fontaneros",
+    "agenda reparaciones",
+    "agenda instalaciones",
+    "agenda reformas",
+    "software autónomos",
+    "organizar trabajos",
+    "gestión de trabajos",
+  ],
+  openGraph: {
+    title: "AutonomoAgenda | La agenda más simple para autónomos",
+    description:
+      "Agenda simple y visual para autónomos de reparaciones, electricistas, fontaneros, instalaciones y reformas.",
+    type: "website",
+    locale: "es_ES",
+    siteName: "AutonomoAgenda",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AutonomoAgenda | La agenda más simple para autónomos",
+    description:
+      "Agenda simple y visual para autónomos de reparaciones, electricistas, fontaneros, instalaciones y reformas.",
+  },
 };
 
 export default function RootLayout({
@@ -30,11 +56,11 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth`}
     >
-      <body className="min-h-full bg-slate-50 text-slate-900">
-        <div className="flex min-h-screen flex-col">
-          <div className="flex-1">{children}</div>
+      <body className="min-h-screen bg-transparent text-slate-900 antialiased">
+        <div className="relative flex min-h-screen flex-col">
+          <div className="relative flex-1">{children}</div>
           <PublicSiteFooter />
         </div>
       </body>

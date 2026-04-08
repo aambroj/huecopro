@@ -85,35 +85,36 @@ const faqItems = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen bg-transparent text-slate-900">
+      <section className="sticky top-0 z-30 border-b border-white/60 bg-white/75 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-sm font-black text-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-400 text-sm font-black text-white shadow-lg shadow-blue-500/20">
               AA
             </div>
 
-            <div>
-              <p className="text-base font-black leading-none text-slate-900">
-                AutonomoAgenda
+            <div className="min-w-0">
+              <p className="text-base font-black leading-none text-slate-900 sm:text-lg">
+                <span className="block sm:inline">Autonomo</span>
+                <span className="block sm:ml-1 sm:inline">Agenda</span>
               </p>
-              <p className="mt-1 text-xs font-medium text-slate-500">
+              <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
                 La agenda más simple para autónomos
               </p>
             </div>
           </Link>
 
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-white"
             >
               Entrar
             </Link>
 
             <Link
               href="/registro"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
             >
               Registrarse
             </Link>
@@ -121,28 +122,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 py-10 sm:px-6 sm:py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <section className="px-4 pb-8 pt-8 sm:px-6 sm:pb-10 sm:pt-12">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700">
+            <div className="inline-flex items-center rounded-full border border-sky-200/80 bg-white/80 px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur">
               Agenda simple para trabajar más rápido
             </div>
 
-            <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
               Encaja trabajos sin liarte con una agenda pesada
             </h1>
 
             <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
               AutonomoAgenda está pensado para autónomos que necesitan ver rápido
               sus próximos huecos, apuntar trabajos sin perder tiempo y mantener
-              su jornada ordenada de forma simple.
+              su jornada ordenada de forma simple, clara y profesional.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               {audience.map((item) => (
                 <span
                   key={item}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm"
+                  className="inline-flex items-center rounded-full border border-white/70 bg-white/75 px-3.5 py-1.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur"
                 >
                   {item}
                 </span>
@@ -152,14 +153,14 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/registro"
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
               >
                 Crear cuenta
               </Link>
 
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-base font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white/85 px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-white"
               >
                 Ya tengo cuenta
               </Link>
@@ -167,71 +168,71 @@ export default function HomePage() {
               <InstallAppButton />
             </div>
 
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm leading-6 text-slate-500 sm:text-base">
               La parte comercial vive aquí fuera. Dentro, la agenda de trabajo
               será rápida, ligera y sin ruido.
             </p>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-[2rem] border border-white/70 bg-white/78 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
+            <div className="rounded-[1.6rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Vista rápida
                   </p>
-                  <p className="mt-2 text-2xl font-black text-slate-900">
+                  <p className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
                     Próximos huecos
                   </p>
                 </div>
 
-                <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
                   Ligero
                 </span>
               </div>
 
               <div className="mt-5 grid gap-3">
-                <div className="rounded-2xl border border-emerald-200 bg-white p-4">
+                <div className="rounded-3xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 to-white p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-slate-900 sm:text-base">
                         Martes 7
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-500 sm:text-base">
                         Primer hueco libre
                       </p>
                     </div>
 
-                    <p className="text-2xl font-black text-emerald-700">
+                    <p className="text-2xl font-black text-emerald-700 sm:text-3xl">
                       11:30
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-red-200 bg-white p-4">
+                <div className="rounded-3xl border border-red-200/80 bg-gradient-to-r from-red-50 to-white p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-slate-900 sm:text-base">
                         Trabajo comprometido
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-500 sm:text-base">
                         Instalación · 09:00 - 10:30
                       </p>
                     </div>
 
-                    <span className="inline-flex rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">
+                    <span className="inline-flex rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
                       Ocupado
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-sky-200 bg-white p-4">
+                <div className="rounded-3xl border border-sky-200/80 bg-gradient-to-r from-sky-50 to-white p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-slate-900 sm:text-base">
                         Trabajo hecho
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-500 sm:text-base">
                         Reparación · 12:00 - 13:00
                       </p>
                     </div>
@@ -242,8 +243,8 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <p className="text-sm font-semibold text-slate-500">
+                <div className="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                  <p className="text-sm font-semibold leading-6 text-slate-600 sm:text-base">
                     Dentro no hace falta marketing, solo una herramienta rápida
                     para trabajar mejor.
                   </p>
@@ -255,12 +256,12 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/70 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
               Qué vas a encontrar
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Un producto claro por fuera y útil por dentro
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
@@ -274,7 +275,7 @@ export default function HomePage() {
             {benefits.map((item) => (
               <article
                 key={item.title}
-                className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <h3 className="text-xl font-bold text-slate-900">
                   {item.title}
@@ -289,12 +290,12 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/70 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
               Cómo funciona
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Menos pasos, menos lío
             </h2>
           </div>
@@ -303,9 +304,9 @@ export default function HomePage() {
             {steps.map((item, index) => (
               <article
                 key={item.title}
-                className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-sm font-black text-white">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-sm font-black text-white shadow-sm">
                   {index + 1}
                 </div>
 
@@ -322,7 +323,7 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-slate-900 p-6 text-white shadow-sm sm:p-8">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-slate-800/20 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 p-6 text-white shadow-[0_24px_60px_rgba(2,6,23,0.28)] sm:p-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">
               Acceso compartido entre profesionales
@@ -341,7 +342,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <div className="rounded-3xl border border-white/10 bg-white/8 p-5 backdrop-blur">
               <p className="text-lg font-bold">Cuenta propia</p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Cada autónomo entra con su usuario y trabaja sobre su propia
@@ -349,7 +350,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <div className="rounded-3xl border border-white/10 bg-white/8 p-5 backdrop-blur">
               <p className="text-lg font-bold">Visibilidad cruzada</p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Si ambos tienen cuenta activa, podrán ver la agenda del otro en
@@ -357,7 +358,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <div className="rounded-3xl border border-white/10 bg-white/8 p-5 backdrop-blur">
               <p className="text-lg font-bold">Control reversible</p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Compartir, dejar de compartir y volver a compartir cuando
@@ -369,12 +370,12 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/70 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
               Dudas habituales
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               FAQ rápida
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
@@ -386,7 +387,7 @@ export default function HomePage() {
             {faqItems.map((item) => (
               <article
                 key={item.question}
-                className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm"
               >
                 <h3 className="text-lg font-bold text-slate-900">
                   {item.question}
@@ -399,14 +400,14 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 sm:text-base">
               Si quieres ver más información, puedes ir a la página completa de
               preguntas frecuentes.
             </p>
 
             <Link
               href="/faq"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
             >
               Ver FAQ completa
             </Link>
@@ -415,12 +416,12 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/70 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
               Información y soporte
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               ¿Necesitas escribirnos?
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
@@ -432,30 +433,30 @@ export default function HomePage() {
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <a
               href="mailto:alber.ambroj@gmail.com"
-              className="rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:border-slate-300 hover:bg-white"
+              className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Correo 1
               </p>
-              <p className="mt-3 break-all text-lg font-bold text-slate-900">
+              <p className="mt-3 break-all text-lg font-bold text-slate-900 sm:text-xl">
                 alber.ambroj@gmail.com
               </p>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-slate-600 sm:text-base">
                 Información y soporte de AutonomoAgenda.
               </p>
             </a>
 
             <a
               href="mailto:aambroj@yahoo.es"
-              className="rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:border-slate-300 hover:bg-white"
+              className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Correo 2
               </p>
-              <p className="mt-3 break-all text-lg font-bold text-slate-900">
+              <p className="mt-3 break-all text-lg font-bold text-slate-900 sm:text-xl">
                 aambroj@yahoo.es
               </p>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-slate-600 sm:text-base">
                 Información y soporte de AutonomoAgenda.
               </p>
             </a>
@@ -463,13 +464,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 py-10 sm:px-6 sm:py-14">
-        <div className="mx-auto max-w-4xl rounded-[2rem] border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-10">
+      <section className="px-4 pb-10 pt-4 sm:px-6 sm:pb-14 sm:pt-6">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-white/70 bg-white/82 p-6 text-center shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Empieza hoy
           </p>
 
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
             Organiza tu jornada sin recargar tu cabeza
           </h2>
 
@@ -482,14 +483,14 @@ export default function HomePage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/registro"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
             >
               Registrarme
             </Link>
 
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-base font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
             >
               Entrar a mi cuenta
             </Link>

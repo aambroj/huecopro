@@ -42,24 +42,37 @@ export default function PasswordField({
         <button
           type="button"
           onClick={() => setVisible((current) => !current)}
-          className="text-sm font-semibold text-slate-600 underline underline-offset-4 transition hover:text-slate-900"
+          className="inline-flex items-center rounded-xl px-2 py-1 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         >
           {visible ? "Ocultar" : "Mostrar"}
         </button>
       </div>
 
-      <input
-        id={inputId}
-        type={visible ? "text" : "password"}
-        autoComplete={autoComplete}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-slate-500 disabled:bg-slate-100"
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        minLength={minLength}
-      />
+      <div className="relative">
+        <input
+          id={inputId}
+          type={visible ? "text" : "password"}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 pr-24 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+          minLength={minLength}
+        />
+
+        <button
+          type="button"
+          onClick={() => setVisible((current) => !current)}
+          className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:hidden"
+          disabled={disabled}
+          tabIndex={-1}
+          aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+        >
+          {visible ? "Ocultar" : "Mostrar"}
+        </button>
+      </div>
     </div>
   );
 }

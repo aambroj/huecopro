@@ -62,18 +62,22 @@ export default function SharedAgendaSelector({
 
   if (!hasOptions) {
     return (
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
+      <section className="rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Agenda compartida
             </p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">
+            <p className="mt-1.5 text-sm font-semibold text-slate-900 sm:text-base">
               Todavía no tienes ninguna agenda conectada
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              Cuando conectes otra cuenta, podrás cambiar entre agendas en solo
+              lectura desde aquí.
             </p>
           </div>
 
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
             Sin conexiones activas
           </span>
         </div>
@@ -82,26 +86,39 @@ export default function SharedAgendaSelector({
   }
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+    <section className="rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
             Agenda compartida
           </p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-900">
+
+          <h2 className="mt-1.5 text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
             Cambiar agenda compartida
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+
+          <p className="mt-1.5 text-sm leading-6 text-slate-600 sm:text-base">
             Puedes elegir qué agenda compartida quieres ver. La agenda ajena es
             solo lectura y se mantiene la semana y los filtros que ya tengas
             aplicados.
           </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm">
+              Solo lectura
+            </span>
+
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
+              {options.length} agenda{options.length === 1 ? "" : "s"} disponible
+              {options.length === 1 ? "" : "s"}
+            </span>
+          </div>
         </div>
 
         <div className="w-full sm:max-w-sm">
           <label
             htmlFor="shared-agenda-selector"
-            className="mb-2 block text-sm font-medium text-slate-700"
+            className="mb-2 block text-sm font-semibold text-slate-700"
           >
             Agenda visible
           </label>
@@ -111,7 +128,7 @@ export default function SharedAgendaSelector({
             value={selectedUserId}
             onChange={(event) => handleChange(event.target.value)}
             disabled={isPending}
-            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {options.map((option) => (
               <option key={option.userId} value={option.userId}>
@@ -120,7 +137,7 @@ export default function SharedAgendaSelector({
             ))}
           </select>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <p className="text-xs text-slate-500">
               Mostrando:{" "}
               <span className="font-semibold text-slate-700">
@@ -129,10 +146,14 @@ export default function SharedAgendaSelector({
             </p>
 
             {isPending ? (
-              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
+              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 shadow-sm">
                 Cambiando...
               </span>
-            ) : null}
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-sm">
+                Lista
+              </span>
+            )}
           </div>
         </div>
       </div>

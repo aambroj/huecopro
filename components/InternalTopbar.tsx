@@ -8,8 +8,8 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 function getLinkClasses(isActive: boolean) {
   return isActive
-    ? "inline-flex items-center rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm"
-    : "inline-flex items-center rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900";
+    ? "inline-flex items-center rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/10"
+    : "inline-flex items-center rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-200 hover:bg-white hover:text-slate-900";
 }
 
 function normalizeEmail(value: string | null | undefined) {
@@ -24,10 +24,12 @@ export default function InternalTopbar() {
 
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isAgendaRoute = pathname === "/agenda" || pathname.startsWith("/agenda/");
+  const isAgendaRoute =
+    pathname === "/agenda" || pathname.startsWith("/agenda/");
   const isCompartirRoute =
     pathname === "/compartir" || pathname.startsWith("/compartir/");
-  const isCuentaRoute = pathname === "/cuenta" || pathname.startsWith("/cuenta/");
+  const isCuentaRoute =
+    pathname === "/cuenta" || pathname.startsWith("/cuenta/");
 
   useEffect(() => {
     let isMounted = true;
@@ -133,26 +135,26 @@ export default function InternalTopbar() {
   const hasPendingInvites = pendingInvitesCount > 0;
 
   return (
-    <header className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <header className="mb-6 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center justify-between gap-3">
           <Link href="/agenda" className="inline-flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-sm font-black text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-sm font-black text-white shadow-lg shadow-slate-900/10">
               AA
             </div>
 
             <div>
-              <p className="text-base font-black leading-none text-slate-900">
+              <p className="text-base font-black leading-none text-slate-900 sm:text-lg">
                 AutonomoAgenda
               </p>
-              <p className="mt-1 text-xs font-medium text-slate-500">
+              <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
                 Agenda de trabajo
               </p>
             </div>
           </Link>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <nav className="flex flex-wrap gap-2">
             <Link href="/agenda" className={getLinkClasses(isAgendaRoute)}>
               Agenda
@@ -160,7 +162,7 @@ export default function InternalTopbar() {
 
             <Link
               href="/compartir"
-              className={`${getLinkClasses(isCompartirRoute)} gap-2`}
+              className={`${getLinkClasses(isCompartirRoute)} gap-2.5`}
             >
               <span>Compartir agenda</span>
 
@@ -172,7 +174,7 @@ export default function InternalTopbar() {
                   </span>
 
                   <span
-                    className={`inline-flex min-w-[22px] items-center justify-center rounded-full px-2 py-0.5 text-xs font-black ${
+                    className={`inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-0.5 text-xs font-black ${
                       isCompartirRoute
                         ? "bg-white text-red-600"
                         : "bg-red-600 text-white"
@@ -189,7 +191,17 @@ export default function InternalTopbar() {
             </Link>
           </nav>
 
-          <LogoutButton />
+          <div className="flex items-center justify-between gap-3">
+            {hasPendingInvites ? (
+              <div className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm lg:hidden">
+                {pendingInvitesCount} invitación
+                {pendingInvitesCount === 1 ? "" : "es"} pendiente
+                {pendingInvitesCount === 1 ? "" : "s"}
+              </div>
+            ) : null}
+
+            <LogoutButton />
+          </div>
         </div>
       </div>
     </header>

@@ -92,28 +92,96 @@ export default function LoginPageClient() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-14">
-      <div className="mx-auto max-w-md">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-          <div className="mb-6">
-            <Link
-              href="/"
-              className="text-sm font-semibold text-slate-500 transition hover:text-slate-700"
-            >
-              ← Volver a la portada
-            </Link>
+    <main className="min-h-screen bg-transparent px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
+        <section className="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-slate-700"
+          >
+            ← Volver a la portada
+          </Link>
 
-            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              AutonomoAgenda
+          <div className="mt-6 flex items-center gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-400 text-base font-black text-white shadow-lg shadow-blue-500/20">
+              AA
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-lg font-black leading-none text-slate-950">
+                <span className="block sm:inline">Autonomo</span>
+                <span className="block sm:ml-1 sm:inline">Agenda</span>
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                La agenda más simple para autónomos
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+              Acceso rápido
             </p>
 
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">
-              Entrar
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              Entra a tu agenda de trabajo
             </h1>
 
-            <p className="mt-3 text-base text-slate-600">
-              Accede a tu agenda de trabajo para ver tus huecos libres y tus
-              trabajos.
+            <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+              Accede a tu cuenta para ver tus huecos libres, tus trabajos y el
+              seguimiento del día sin complicaciones.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-3">
+            <div className="rounded-3xl border border-sky-200/80 bg-gradient-to-r from-sky-50 to-white p-4">
+              <p className="text-sm font-bold text-slate-900">
+                Tu usuario siempre es tu email
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Entra con el correo con el que te registraste en
+                AutonomoAgenda.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 to-white p-4">
+              <p className="text-sm font-bold text-slate-900">
+                Pensado para móvil y tablet
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Accede rápido desde el trabajo, desde casa o desde la furgoneta.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200/80 bg-white p-4">
+              <p className="text-sm font-bold text-slate-900">
+                ¿Todavía no tienes cuenta?
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Puedes crearla en pocos pasos y empezar a usar tu agenda enseguida.
+              </p>
+              <Link
+                href="/registro"
+                className="mt-3 inline-flex items-center text-sm font-semibold text-slate-900 underline underline-offset-4"
+              >
+                Ir al registro
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-8">
+          <div className="mb-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Iniciar sesión
+            </p>
+
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
+              Entrar
+            </h2>
+
+            <p className="mt-3 text-base leading-7 text-slate-600">
+              Usa tu email y tu contraseña para entrar a tu cuenta.
             </p>
           </div>
 
@@ -154,7 +222,7 @@ export default function LoginPageClient() {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="grid gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-5">
             <div>
               <label
                 htmlFor="email"
@@ -162,6 +230,7 @@ export default function LoginPageClient() {
               >
                 Email
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -171,7 +240,7 @@ export default function LoginPageClient() {
                   setEmail(event.target.value);
                   setErrorMessage("");
                 }}
-                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-slate-500"
+                className="w-full rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
                 placeholder="tuemail@ejemplo.com"
                 required
               />
@@ -191,7 +260,7 @@ export default function LoginPageClient() {
                 required
               />
 
-              <div className="mt-2 flex justify-end">
+              <div className="mt-3 flex justify-end">
                 <Link
                   href="/recuperar-contrasena"
                   className="text-sm font-semibold text-slate-700 underline underline-offset-4 transition hover:text-slate-900"
@@ -201,11 +270,11 @@ export default function LoginPageClient() {
               </div>
             </div>
 
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-1 grid gap-3 sm:grid-cols-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-base font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-[54px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-base font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "Entrando..." : "Entrar"}
               </button>
@@ -213,14 +282,14 @@ export default function LoginPageClient() {
               <button
                 type="button"
                 onClick={handleUseAnotherEmail}
-                className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex min-h-[54px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
               >
                 Usar otro email
               </button>
             </div>
           </form>
 
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          <div className="mt-5 rounded-3xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white px-4 py-4 text-sm leading-6 text-slate-600">
             Tu usuario es el{" "}
             <span className="font-semibold text-slate-900">
               email con el que te registraste
@@ -229,16 +298,28 @@ export default function LoginPageClient() {
             la recuperación de contraseña.
           </div>
 
-          <p className="mt-5 text-sm text-slate-600">
-            ¿Todavía no tienes cuenta?{" "}
-            <Link
-              href="/registro"
-              className="font-semibold text-slate-900 underline underline-offset-4"
-            >
-              Regístrate aquí
-            </Link>
-          </p>
-        </div>
+          <div className="mt-5 flex flex-col gap-3 rounded-3xl border border-slate-200/80 bg-white px-4 py-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              ¿Todavía no tienes cuenta?{" "}
+              <Link
+                href="/registro"
+                className="font-semibold text-slate-900 underline underline-offset-4"
+              >
+                Regístrate aquí
+              </Link>
+            </p>
+
+            <div className="text-sm text-slate-500">
+              Soporte:{" "}
+              <a
+                href="mailto:alber.ambroj@gmail.com"
+                className="font-semibold text-slate-700"
+              >
+                alber.ambroj@gmail.com
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

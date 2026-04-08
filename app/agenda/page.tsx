@@ -418,15 +418,15 @@ function getTimelineStatusPillClasses(status: string) {
   const normalized = status.trim().toLowerCase();
 
   if (normalized === "pendiente") {
-    return "border-red-200 bg-white/85 text-red-700";
+    return "border-red-200 bg-white/90 text-red-700";
   }
 
   if (normalized === "hecho" || normalized === "terminado") {
-    return "border-sky-200 bg-white/85 text-sky-700";
+    return "border-sky-200 bg-white/90 text-sky-700";
   }
 
   if (normalized === "facturado") {
-    return "border-indigo-200 bg-white/85 text-indigo-700";
+    return "border-indigo-200 bg-white/90 text-indigo-700";
   }
 
   if (normalized === "cancelado") {
@@ -434,10 +434,10 @@ function getTimelineStatusPillClasses(status: string) {
   }
 
   if (normalized === "archivado") {
-    return "border-slate-200 bg-white/85 text-slate-600";
+    return "border-slate-200 bg-white/90 text-slate-600";
   }
 
-  return "border-slate-200 bg-white/85 text-slate-700";
+  return "border-slate-200 bg-white/90 text-slate-700";
 }
 
 function getMainTimeClasses(status: string) {
@@ -496,32 +496,32 @@ function getTimelineJobClasses(status: string) {
   const normalized = status.trim().toLowerCase();
 
   if (normalized === "pendiente") {
-    return "border-red-300 bg-red-100 text-red-900";
+    return "border-red-300 bg-red-100/95 text-red-900";
   }
 
   if (normalized === "hecho" || normalized === "terminado") {
-    return "border-sky-300 bg-sky-100 text-sky-900";
+    return "border-sky-300 bg-sky-100/95 text-sky-900";
   }
 
   if (normalized === "facturado") {
-    return "border-indigo-300 bg-indigo-100 text-indigo-900";
+    return "border-indigo-300 bg-indigo-100/95 text-indigo-900";
   }
 
-  return "border-slate-300 bg-slate-100 text-slate-900";
+  return "border-slate-300 bg-slate-100/95 text-slate-900";
 }
 
 function getTrabajoCardClasses(status: string) {
   const normalized = status.trim().toLowerCase();
 
   if (normalized === "cancelado") {
-    return "border-amber-200 bg-amber-50/60";
+    return "border-amber-200/80 bg-gradient-to-br from-amber-50/90 to-white";
   }
 
   if (normalized === "archivado") {
-    return "border-slate-300 bg-slate-50";
+    return "border-slate-300/80 bg-gradient-to-br from-slate-50 to-white";
   }
 
-  return "border-slate-200 bg-white";
+  return "border-white/70 bg-white/88 backdrop-blur-sm";
 }
 
 function isBlockingStatus(status: string) {
@@ -796,7 +796,7 @@ function getCompactDayCardClasses(params: {
   } = params;
 
   if (isNonWorking) {
-    return "border-rose-300 bg-rose-100/90";
+    return "border-rose-300 bg-rose-100/85";
   }
 
   if (isSunday) {
@@ -804,26 +804,26 @@ function getCompactDayCardClasses(params: {
       return "border-rose-300 bg-rose-100/80";
     }
 
-    return "border-rose-200 bg-rose-50/80";
+    return "border-rose-200 bg-rose-50/85";
   }
 
   if (!hasActualFreeTime) {
-    return "border-red-200 bg-red-50/60";
+    return "border-red-200 bg-white/85";
   }
 
   if (!hasUsableGaps) {
-    return "border-emerald-200 bg-emerald-50/50";
+    return "border-emerald-200 bg-white/85";
   }
 
   if (percentage >= 85) {
-    return "border-red-200 bg-white";
+    return "border-red-200 bg-white/88";
   }
 
   if (percentage >= 60) {
-    return "border-amber-200 bg-white";
+    return "border-amber-200 bg-white/88";
   }
 
-  return "border-emerald-200 bg-white";
+  return "border-emerald-200 bg-white/88";
 }
 
 function getCompactDayBadgeClasses(params: {
@@ -863,14 +863,14 @@ function getCompactDayBadgeLabel(params: {
 
 function getDaySectionClasses(isSunday: boolean) {
   return isSunday
-    ? "border-rose-200 bg-rose-50/40"
-    : "border-slate-200 bg-white";
+    ? "border-rose-200/80 bg-white/82 backdrop-blur-xl"
+    : "border-white/70 bg-white/82 backdrop-blur-xl";
 }
 
 function getInnerPanelClasses(isSunday: boolean) {
   return isSunday
-    ? "border-rose-200 bg-rose-50/55"
-    : "border-slate-200 bg-slate-50";
+    ? "border-rose-200/80 bg-gradient-to-br from-rose-50/85 to-white"
+    : "border-white/70 bg-white/72 backdrop-blur-sm";
 }
 
 function getNonWorkingBadgeClasses() {
@@ -878,7 +878,7 @@ function getNonWorkingBadgeClasses() {
 }
 
 function getRestPanelClasses() {
-  return "overflow-hidden rounded-[2rem] border border-rose-200 bg-rose-50 px-5 py-5 shadow-sm";
+  return "overflow-hidden rounded-[2rem] border border-rose-200/80 bg-gradient-to-br from-rose-50 to-white px-5 py-5 shadow-sm";
 }
 
 function getTimelineHeightPx(visibleWindowMinutes: number) {
@@ -1083,7 +1083,9 @@ function renderSummaryCard({
   cardClasses: string;
 }) {
   return (
-    <div className={`rounded-3xl border p-5 shadow-sm ${cardClasses}`}>
+    <div
+      className={`rounded-3xl border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
+    >
       <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </p>
@@ -1121,7 +1123,7 @@ function renderTrabajoCard(
     <article
       id={`trabajo-${trabajo.id}`}
       key={trabajo.id}
-      className={`scroll-mt-24 rounded-3xl border px-4 py-2 shadow-sm ring-offset-2 target:ring-2 target:ring-sky-300 sm:px-4 sm:py-2 ${getTrabajoCardClasses(
+      className={`scroll-mt-24 rounded-3xl border px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ring-offset-2 target:ring-2 target:ring-sky-300 sm:px-4 sm:py-2 ${getTrabajoCardClasses(
         trabajo.status
       )}`}
     >
@@ -1208,7 +1210,7 @@ function renderTrabajoCard(
         <div className="grid gap-1.5 lg:grid-cols-[1.7fr_1fr]">
           <div className="grid gap-1.5 sm:grid-cols-3">
             {trabajo.phone ? (
-              <div className="rounded-2xl bg-white/70 px-3 py-2">
+              <div className="rounded-2xl bg-white/75 px-3 py-2">
                 <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Teléfono
                 </p>
@@ -1219,7 +1221,7 @@ function renderTrabajoCard(
             ) : null}
 
             {trabajo.address ? (
-              <div className="rounded-2xl bg-white/70 px-3 py-2">
+              <div className="rounded-2xl bg-white/75 px-3 py-2">
                 <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Dirección
                 </p>
@@ -1230,7 +1232,7 @@ function renderTrabajoCard(
             ) : null}
 
             {trabajo.notes ? (
-              <div className="rounded-2xl bg-white/70 px-3 py-2">
+              <div className="rounded-2xl bg-white/75 px-3 py-2">
                 <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Nota
                 </p>
@@ -1241,7 +1243,7 @@ function renderTrabajoCard(
             ) : null}
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white/70 p-1.5">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-1.5">
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               Seguimiento del estado
             </p>
@@ -1581,7 +1583,7 @@ function renderSharedAgendaSection(params: {
   const { owner, data, hasActiveFilters, errorMessage } = params;
 
   return (
-    <section className="mt-8 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
       <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4 sm:px-5">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
           Solo lectura
@@ -1629,7 +1631,7 @@ function renderSharedAgendaSection(params: {
               value: data.committedCount,
               subtitle: "Trabajos comprometidos en la fecha visible.",
               valueClasses: "text-red-700",
-              cardClasses: "border-red-200 bg-white",
+              cardClasses: "border-red-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -1637,7 +1639,7 @@ function renderSharedAgendaSection(params: {
               value: data.doneCount,
               subtitle: "Trabajos hechos en la fecha visible.",
               valueClasses: "text-sky-700",
-              cardClasses: "border-sky-200 bg-white",
+              cardClasses: "border-sky-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -1645,7 +1647,7 @@ function renderSharedAgendaSection(params: {
               value: data.invoicedCount,
               subtitle: "Facturados visibles en esta agenda.",
               valueClasses: "text-indigo-700",
-              cardClasses: "border-indigo-200 bg-white",
+              cardClasses: "border-indigo-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -1653,7 +1655,7 @@ function renderSharedAgendaSection(params: {
               value: data.archivedCount,
               subtitle: "Guardados fuera de producción.",
               valueClasses: "text-slate-700",
-              cardClasses: "border-slate-300 bg-white",
+              cardClasses: "border-slate-300 bg-white/88",
             })}
           </div>
 
@@ -1662,7 +1664,7 @@ function renderSharedAgendaSection(params: {
               <section
                 id={`shared-${owner.userId}-day-${dayItem.date}`}
                 key={`${owner.userId}-${dayItem.date}`}
-                className={`scroll-mt-24 overflow-hidden rounded-3xl border p-5 shadow-sm sm:p-6 ${getDaySectionClasses(
+                className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
                   dayItem.isSunday
                 )}`}
               >
@@ -1696,7 +1698,7 @@ function renderSharedAgendaSection(params: {
 
                 {!dayItem.isNonWorkingDay && dayItem.items.length > 0 ? (
                   <div
-                    className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                    className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
                       dayItem.isSunday
                     )}`}
                   >
@@ -1881,7 +1883,7 @@ function renderSharedAgendaSection(params: {
             ))}
           </div>
 
-          <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/86 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="text-2xl font-bold text-slate-900 sm:text-3xl">
@@ -1969,7 +1971,10 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const { data: inviteData, error: inviteError } =
     inviteIds.length === 0
       ? { data: [] as InviteRow[], error: null }
-      : await supabase.from("shared_agenda_invites").select("*").in("id", inviteIds);
+      : await supabase
+          .from("shared_agenda_invites")
+          .select("*")
+          .in("id", inviteIds);
 
   const inviteMap = new Map(
     (((inviteData as InviteRow[]) ?? []).filter(Boolean) as InviteRow[]).map(
@@ -2113,19 +2118,19 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       : formatDateLabel(anchorDate);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 sm:px-6">
+    <main className="min-h-screen bg-transparent px-4 py-6 text-slate-900 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <InternalTopbar />
         <AgendaAutoRefresh ownerIds={ownerIds} intervalMs={3000} />
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-[2rem] border border-white/70 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
                 AutonomoAgenda
               </p>
 
-              <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
                 Tu agenda de trabajo
               </h1>
 
@@ -2152,8 +2157,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                     Mi agenda · editable
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
-                    Aquí puedes crear trabajos, editar, cambiar estados y moverte
-                    con total normalidad.
+                    Aquí puedes crear trabajos, editar, cambiar estados y
+                    moverte con total normalidad.
                   </p>
                 </div>
 
@@ -2178,24 +2183,24 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
             </div>
 
             <div className="flex flex-col gap-2 sm:items-end">
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
                 {weekRangeLabel}
               </span>
 
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={previousWeekHref}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   Semana anterior
                 </Link>
 
                 <Link
                   href={todayHref}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 ${
                     isCurrentWeek
                       ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      : "border-slate-200/80 bg-white/90 text-slate-700 hover:bg-white"
                   }`}
                 >
                   Hoy
@@ -2203,7 +2208,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
                 <Link
                   href={nextWeekHref}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   Semana siguiente
                 </Link>
@@ -2230,7 +2235,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           />
         </div>
 
-        <section className="mt-6 rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
@@ -2252,7 +2257,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               value: ownAgendaData.committedCount,
               subtitle: "Trabajos ya encajados en agenda.",
               valueClasses: "text-red-700",
-              cardClasses: "border-red-200 bg-white",
+              cardClasses: "border-red-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -2260,7 +2265,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               value: ownAgendaData.doneCount,
               subtitle: "Trabajos realizados pendientes de cerrar.",
               valueClasses: "text-sky-700",
-              cardClasses: "border-sky-200 bg-white",
+              cardClasses: "border-sky-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -2268,7 +2273,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               value: ownAgendaData.invoicedCount,
               subtitle: "Pendientes de archivar.",
               valueClasses: "text-indigo-700",
-              cardClasses: "border-indigo-200 bg-white",
+              cardClasses: "border-indigo-200 bg-white/88",
             })}
 
             {renderSummaryCard({
@@ -2276,13 +2281,13 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               value: ownAgendaData.archivedCount,
               subtitle: "Guardados fuera de producción.",
               valueClasses: "text-slate-700",
-              cardClasses: "border-slate-300 bg-white",
+              cardClasses: "border-slate-300 bg-white/88",
             })}
           </div>
         </section>
 
         {!hasActiveFilters && !error ? (
-          <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
@@ -2294,7 +2299,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 </p>
               </div>
 
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
                 {weekRangeLabel}
               </span>
             </div>
@@ -2304,7 +2309,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 <a
                   key={`compact-${dayItem.date}`}
                   href={`#day-${dayItem.date}`}
-                  className={`min-w-0 overflow-hidden rounded-3xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${getCompactDayCardClasses(
+                  className={`min-w-0 overflow-hidden rounded-3xl border p-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-md ${getCompactDayCardClasses(
                     {
                       percentage: dayItem.occupancyPercentage,
                       hasActualFreeTime: dayItem.hasActualFreeTime,
@@ -2426,11 +2431,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
         <div className="mt-6">
           {error ? (
-            <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-base text-red-700 shadow-sm">
+            <div className="rounded-[2rem] border border-red-200 bg-red-50 p-6 text-base text-red-700 shadow-sm">
               Error al cargar trabajos: {error.message}
             </div>
           ) : !ownAgendaData.hasAnyVisibleWork ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 text-base text-slate-600 shadow-sm">
+            <div className="rounded-[2rem] border border-white/70 bg-white/82 p-6 text-base text-slate-600 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
               No hay trabajos que coincidan con los filtros actuales.
             </div>
           ) : (
@@ -2440,7 +2445,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                   <section
                     id={`day-${dayItem.date}`}
                     key={dayItem.date}
-                    className={`scroll-mt-24 overflow-hidden rounded-3xl border p-5 shadow-sm sm:p-6 ${getDaySectionClasses(
+                    className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
                       dayItem.isSunday
                     )}`}
                   >
@@ -2539,7 +2544,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                         ) : (
                           <>
                             <div
-                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2605,7 +2610,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                     {dayItem.firstFreeTime ?? "--:--"}
                                   </p>
                                   <p className="mt-1 text-sm text-slate-500">
-                                    Primer hueco disponible del día.
+                                    Primer momento desde el que todavía puedes
+                                    encajar.
                                   </p>
                                 </div>
 
@@ -2626,7 +2632,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                 </div>
                               </div>
 
-                              <div className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-600">
+                              <div className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm">
                                 Visible desde{" "}
                                 {minutesToTime(dayItem.visibleDayStartMinutes)}{" "}
                                 hasta{" "}
@@ -2886,7 +2892,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                             </div>
 
                             <div
-                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2952,7 +2958,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                             </div>
 
                             <div
-                              className={`mt-5 rounded-3xl border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2967,7 +2973,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   </p>
                                 </div>
 
-                                <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 shadow-sm">
                                   Sugerencia por defecto:{" "}
                                   {QUICK_ADD_DEFAULT_DURATION} min
                                 </div>
@@ -3113,7 +3119,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 ))}
               </div>
 
-              <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
@@ -3150,12 +3156,13 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         {sharedOwners.length > 0 ? (
           <>
             {activeLinksError || inviteError ? (
-              <div className="mt-8 rounded-3xl border border-red-200 bg-red-50 p-5 text-red-700 shadow-sm">
-                No se pudo cargar toda la información de las agendas compartidas.
+              <div className="mt-8 rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-700 shadow-sm">
+                No se pudo cargar toda la información de las agendas
+                compartidas.
               </div>
             ) : null}
 
-            <section className="mt-8 rounded-3xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm sm:p-6">
+            <section className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
