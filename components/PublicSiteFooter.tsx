@@ -63,7 +63,7 @@ export default function PublicSiteFooter() {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Correo principal
                   </p>
-                  <p className="mt-2 break-all text-lg font-bold text-slate-900 transition group-hover:text-sky-700">
+                  <p className="mt-2 text-[0.95rem] font-bold leading-tight text-slate-900 transition group-hover:text-sky-700 sm:text-base lg:text-lg">
                     alber.ambroj@gmail.com
                   </p>
                 </a>
@@ -75,7 +75,7 @@ export default function PublicSiteFooter() {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Correo alternativo
                   </p>
-                  <p className="mt-2 break-all text-lg font-bold text-slate-900 transition group-hover:text-sky-700">
+                  <p className="mt-2 text-[0.95rem] font-bold leading-tight text-slate-900 transition group-hover:text-sky-700 sm:text-base lg:text-lg">
                     aambroj@yahoo.es
                   </p>
                 </a>

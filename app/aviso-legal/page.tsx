@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Aviso legal",
+  title: "Aviso legal | AutonomoAgenda",
   description: "Aviso legal de AutonomoAgenda.",
 };
 
@@ -33,14 +33,14 @@ export default function AvisoLegalPage() {
                 comunicaciones administrativas, puedes contactar por correo en{" "}
                 <a
                   href="mailto:alber.ambroj@gmail.com"
-                  className="font-semibold text-slate-900 underline underline-offset-4"
+                  className="whitespace-nowrap font-semibold text-[clamp(0.86rem,3.2vw,1rem)] text-slate-900 underline underline-offset-4"
                 >
                   alber.ambroj@gmail.com
                 </a>{" "}
                 o{" "}
                 <a
                   href="mailto:aambroj@yahoo.es"
-                  className="font-semibold text-slate-900 underline underline-offset-4"
+                  className="whitespace-nowrap font-semibold text-[clamp(0.86rem,3.2vw,1rem)] text-slate-900 underline underline-offset-4"
                 >
                   aambroj@yahoo.es
                 </a>
@@ -96,9 +96,7 @@ export default function AvisoLegalPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-bold text-slate-900">
-                Contacto
-              </h2>
+              <h2 className="text-xl font-bold text-slate-900">Contacto</h2>
               <p className="mt-3">
                 Para soporte, incidencias, información general o comunicaciones
                 relacionadas con el servicio, puedes escribir a cualquiera de
@@ -108,13 +106,13 @@ export default function AvisoLegalPage() {
               <div className="mt-3 flex flex-col gap-2">
                 <a
                   href="mailto:alber.ambroj@gmail.com"
-                  className="font-semibold text-slate-900 underline underline-offset-4"
+                  className="whitespace-nowrap font-semibold text-[clamp(0.86rem,3.2vw,1rem)] text-slate-900 underline underline-offset-4"
                 >
                   alber.ambroj@gmail.com
                 </a>
                 <a
                   href="mailto:aambroj@yahoo.es"
-                  className="font-semibold text-slate-900 underline underline-offset-4"
+                  className="whitespace-nowrap font-semibold text-[clamp(0.86rem,3.2vw,1rem)] text-slate-900 underline underline-offset-4"
                 >
                   aambroj@yahoo.es
                 </a>
