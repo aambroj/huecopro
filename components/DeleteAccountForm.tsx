@@ -39,9 +39,7 @@ export default function DeleteAccountForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          result?.error || "No se pudo eliminar la cuenta."
-        );
+        throw new Error(result?.error || "No se pudo eliminar la cuenta.");
       }
 
       window.location.href = "/login";
@@ -56,14 +54,14 @@ export default function DeleteAccountForm() {
   }
 
   return (
-    <section className="mt-8 rounded-3xl border border-red-200 bg-red-50 p-5 sm:p-6">
+    <section className="rounded-[2rem] border border-red-200 bg-red-50/95 p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
             Zona sensible
           </p>
 
-          <h2 className="mt-3 text-2xl font-bold text-slate-900">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
             Eliminar mi cuenta
           </h2>
 
@@ -79,13 +77,13 @@ export default function DeleteAccountForm() {
           </p>
         </div>
 
-        <span className="inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700">
+        <span className="inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm">
           Irreversible
         </span>
       </div>
 
-      <div className="mt-5 rounded-3xl border border-red-200 bg-white p-4 sm:p-5">
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <div className="mt-5 rounded-[2rem] border border-red-200 bg-white/92 p-4 shadow-sm sm:p-5">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
           Para confirmar, escribe exactamente:
           <span className="ml-2 font-bold">{CONFIRM_TEXT}</span>
         </div>
@@ -93,7 +91,7 @@ export default function DeleteAccountForm() {
         <div className="mt-4 grid gap-2">
           <label
             htmlFor="delete-account-confirmation"
-            className="text-sm font-medium text-slate-700"
+            className="text-sm font-semibold text-slate-700"
           >
             Confirmación manual
           </label>
@@ -104,7 +102,7 @@ export default function DeleteAccountForm() {
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
             placeholder={CONFIRM_TEXT}
-            className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
+            className="rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-red-400 focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-slate-100"
             disabled={loading}
           />
         </div>
@@ -120,7 +118,7 @@ export default function DeleteAccountForm() {
             type="button"
             onClick={handleDelete}
             disabled={!isConfirmationValid || loading}
-            className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Eliminando cuenta..." : "Eliminar mi cuenta definitivamente"}
           </button>

@@ -90,11 +90,6 @@ export default function InstallAppButton() {
       return;
     }
 
-    if (ios) {
-      setShowIOSHelp((current) => !current);
-      return;
-    }
-
     setShowIOSHelp((current) => !current);
   }
 
@@ -107,16 +102,16 @@ export default function InstallAppButton() {
       <button
         type="button"
         onClick={handleInstall}
-        className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-base font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
+        className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white/85 px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-white sm:w-auto"
       >
         {busy ? "Abriendo instalación..." : "Instalar app"}
       </button>
 
       {showIOSHelp ? (
-        <div className="mt-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm leading-6 text-slate-700 shadow-sm">
+        <div className="mt-3 rounded-[1.5rem] border border-white/70 bg-white/88 px-4 py-4 text-left text-sm leading-6 text-slate-700 shadow-[0_14px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl">
           {ios ? (
             <>
-              <p className="font-semibold text-slate-900">
+              <p className="font-bold text-slate-900">
                 Instalación en iPhone o iPad
               </p>
               <p className="mt-2">
@@ -130,7 +125,7 @@ export default function InstallAppButton() {
             </>
           ) : (
             <>
-              <p className="font-semibold text-slate-900">
+              <p className="font-bold text-slate-900">
                 Instalación desde el navegador
               </p>
               <p className="mt-2">

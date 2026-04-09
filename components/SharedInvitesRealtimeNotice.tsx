@@ -36,14 +36,14 @@ function normalizeEmail(value: string | null | undefined) {
 
 function getNoticeClasses(tone: NoticeTone) {
   if (tone === "emerald") {
-    return "border-emerald-200 bg-white";
+    return "border-emerald-200/90 bg-white/90";
   }
 
   if (tone === "amber") {
-    return "border-amber-200 bg-white";
+    return "border-amber-200/90 bg-white/90";
   }
 
-  return "border-sky-200 bg-white";
+  return "border-sky-200/90 bg-white/90";
 }
 
 function getDotClasses(tone: NoticeTone) {
@@ -56,6 +56,24 @@ function getDotClasses(tone: NoticeTone) {
   }
 
   return "bg-sky-500";
+}
+
+function getPillClasses(tone: NoticeTone) {
+  if (tone === "emerald") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (tone === "amber") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-sky-200 bg-sky-50 text-sky-700";
+}
+
+function getPillLabel(tone: NoticeTone) {
+  if (tone === "emerald") return "Correcto";
+  if (tone === "amber") return "Atención";
+  return "Nuevo";
 }
 
 export default function SharedInvitesRealtimeNotice({
@@ -268,19 +286,35 @@ export default function SharedInvitesRealtimeNotice({
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-[100] max-w-sm rounded-2xl border px-4 py-3 shadow-lg ${getNoticeClasses(
+      className={`fixed bottom-4 right-4 z-[100] w-[calc(100%-2rem)] max-w-md rounded-[2rem] border p-4 shadow-[0_24px_70px_rgba(15,23,42,0.20)] backdrop-blur-xl ${getNoticeClasses(
         notice.tone
       )}`}
     >
       <div className="flex items-start gap-3">
-        <div
-          className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${getDotClasses(
-            notice.tone
-          )}`}
-        />
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-900">Aviso</p>
-          <p className="mt-1 text-sm text-slate-600">{notice.message}</p>
+        <div className="flex shrink-0 flex-col items-center pt-1">
+          <div
+            className={`h-3 w-3 rounded-full shadow-sm ${getDotClasses(
+              notice.tone
+            )}`}
+          />
+          <div className="mt-2 h-full w-px bg-slate-200" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-bold text-slate-900">Aviso en tiempo real</p>
+            <span
+              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getPillClasses(
+                notice.tone
+              )}`}
+            >
+              {getPillLabel(notice.tone)}
+            </span>
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {notice.message}
+          </p>
         </div>
       </div>
     </div>

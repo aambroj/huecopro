@@ -189,7 +189,9 @@ function renderSummaryCard(params: {
   const { title, value, subtitle, valueClasses, cardClasses } = params;
 
   return (
-    <article className={`rounded-3xl border p-5 shadow-sm ${cardClasses}`}>
+    <article
+      className={`rounded-[2rem] border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
+    >
       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         {title}
       </p>
@@ -249,9 +251,7 @@ export default async function CompartirPage() {
   const activeLinks = ((activeLinksData as LinkRow[]) ?? []).filter(Boolean);
 
   const allKnownInvites = [...sentInvites, ...receivedInvites];
-  const inviteMap = new Map(
-    allKnownInvites.map((invite) => [invite.id, invite])
-  );
+  const inviteMap = new Map(allKnownInvites.map((invite) => [invite.id, invite]));
 
   function getLinkLabel(link: LinkRow) {
     if (!link.created_from_invite_id) {
@@ -275,13 +275,13 @@ export default async function CompartirPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 sm:px-6">
+    <main className="min-h-screen bg-transparent px-4 py-6 text-slate-900 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SharedInvitesRealtimeNotice userEmail={normalizedUserEmail} />
         <SharedReceivedInvitesAutoFocus userEmail={normalizedUserEmail} />
         <InternalTopbar />
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-[2rem] border border-white/70 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Compartir
           </p>
@@ -302,14 +302,11 @@ export default async function CompartirPage() {
             dejar de compartir cuando quiera.
           </p>
 
-          <p className="mt-3 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="mt-4 max-w-3xl rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
             La conexión compartida
-            <span className="font-semibold">
-              {" "}
-              no se pierde por cerrar sesión
-            </span>
-            . Seguirá activa aunque volváis al día siguiente, hasta que uno de
-            los dos pulse <span className="font-semibold">“Dejar de compartir”</span>.
+            <span className="font-semibold"> no se pierde por cerrar sesión</span>.
+            Seguirá activa aunque volváis al día siguiente, hasta que uno de los
+            dos pulse <span className="font-semibold">“Dejar de compartir”</span>.
           </p>
         </section>
 
@@ -320,7 +317,7 @@ export default async function CompartirPage() {
             subtitle:
               "Profesionales con los que ya tienes visibilidad mutua en solo lectura.",
             valueClasses: "text-emerald-700",
-            cardClasses: "border-emerald-200 bg-white",
+            cardClasses: "border-emerald-200 bg-white/88",
           })}
 
           {renderSummaryCard({
@@ -329,7 +326,7 @@ export default async function CompartirPage() {
             subtitle:
               "Invitaciones que puedes aceptar o rechazar ahora mismo.",
             valueClasses: "text-amber-700",
-            cardClasses: "border-amber-200 bg-white",
+            cardClasses: "border-amber-200 bg-white/88",
           })}
 
           {renderSummaryCard({
@@ -338,7 +335,7 @@ export default async function CompartirPage() {
             subtitle:
               "Invitaciones que aún dependen de la respuesta del otro profesional.",
             valueClasses: "text-sky-700",
-            cardClasses: "border-sky-200 bg-white",
+            cardClasses: "border-sky-200 bg-white/88",
           })}
         </section>
 
@@ -346,7 +343,7 @@ export default async function CompartirPage() {
           <ShareAgendaInviteForm />
         </div>
 
-        <section className="mt-6 rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
@@ -378,7 +375,7 @@ export default async function CompartirPage() {
               {activeLinkOptions.map((link) => (
                 <article
                   key={link.id}
-                  className="rounded-3xl border border-emerald-200 bg-emerald-50/40 p-5"
+                  className="rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
@@ -391,7 +388,7 @@ export default async function CompartirPage() {
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm text-slate-600">
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
                         {link.description}
                       </p>
                     </div>
@@ -408,7 +405,7 @@ export default async function CompartirPage() {
 
         <section
           id="invitaciones-recibidas"
-          className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition sm:p-6"
+          className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl transition sm:p-6"
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -443,7 +440,7 @@ export default async function CompartirPage() {
                 return (
                   <article
                     key={invite.id}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                    className="rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
@@ -481,7 +478,7 @@ export default async function CompartirPage() {
                           .
                         </p>
 
-                        <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                        <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm leading-6 text-sky-800">
                           Si aceptas, la visibilidad será mutua:
                           <span className="font-semibold">
                             {" "}
@@ -490,7 +487,7 @@ export default async function CompartirPage() {
                           .
                         </p>
 
-                        <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                        <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm leading-6 text-amber-900">
                           Después seguirá compartida aunque cerréis sesión, hasta
                           que uno de los dos deje de compartir.
                         </p>
@@ -512,7 +509,7 @@ export default async function CompartirPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
@@ -546,7 +543,7 @@ export default async function CompartirPage() {
                 return (
                   <article
                     key={invite.id}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                    className="rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
@@ -581,7 +578,7 @@ export default async function CompartirPage() {
                         </p>
 
                         {invite.status === "pending" ? (
-                          <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                          <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm leading-6 text-sky-800">
                             Si la acepta, la conexión será mutua y
                             <span className="font-semibold">
                               {" "}
@@ -592,7 +589,7 @@ export default async function CompartirPage() {
                         ) : null}
 
                         {invite.status === "pending" ? (
-                          <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                          <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm leading-6 text-amber-900">
                             Después la conexión seguirá activa aunque cerréis
                             sesión, hasta que uno de los dos deje de compartir.
                           </p>
@@ -634,7 +631,7 @@ export default async function CompartirPage() {
         <div className="mt-6">
           <Link
             href="/agenda"
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
           >
             Volver a la agenda
           </Link>
