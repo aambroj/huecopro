@@ -8,8 +8,8 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 function getLinkClasses(isActive: boolean) {
   return isActive
-    ? "inline-flex items-center rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/10"
-    : "inline-flex items-center rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-200 hover:bg-white hover:text-slate-900";
+    ? "inline-flex items-center whitespace-nowrap rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-bold !text-white shadow-lg shadow-slate-900/10"
+    : "inline-flex items-center whitespace-nowrap rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-200 hover:bg-white hover:text-slate-900";
 }
 
 function normalizeEmail(value: string | null | undefined) {
@@ -143,7 +143,7 @@ export default function InternalTopbar() {
               AA
             </div>
 
-            <div>
+            <div className="min-w-0">
               <p className="text-base font-black leading-none text-slate-900 sm:text-lg">
                 AutonomoAgenda
               </p>
@@ -176,8 +176,8 @@ export default function InternalTopbar() {
                   <span
                     className={`inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-0.5 text-xs font-black ${
                       isCompartirRoute
-                        ? "bg-white text-red-600"
-                        : "bg-red-600 text-white"
+                        ? "bg-white !text-red-600"
+                        : "bg-red-600 !text-white"
                     }`}
                   >
                     {pendingInvitesCount}
@@ -191,7 +191,7 @@ export default function InternalTopbar() {
             </Link>
           </nav>
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             {hasPendingInvites ? (
               <div className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm lg:hidden">
                 {pendingInvitesCount} invitación

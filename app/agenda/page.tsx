@@ -2201,7 +2201,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                   href={todayHref}
                   className={`inline-flex min-h-[48px] items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 ${
                     isCurrentWeek
-                      ? "border-slate-900 bg-slate-900 text-white"
+                      ? "border-slate-900 bg-slate-900 !text-white"
                       : "border-slate-200/80 bg-white/90 text-slate-700 hover:bg-white"
                   }`}
                 >
