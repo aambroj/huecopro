@@ -29,9 +29,13 @@ export default function PasswordField({
   const inputId = id ?? generatedId;
   const [visible, setVisible] = useState(false);
 
+  function toggleVisibility() {
+    setVisible((current) => !current);
+  }
+
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <label
           htmlFor={inputId}
           className="block text-sm font-semibold text-slate-700"
@@ -41,8 +45,11 @@ export default function PasswordField({
 
         <button
           type="button"
-          onClick={() => setVisible((current) => !current)}
-          className="inline-flex items-center rounded-xl px-2 py-1 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          onClick={toggleVisibility}
+          disabled={disabled}
+          aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+          aria-pressed={visible}
+          className="hidden items-center rounded-xl px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex"
         >
           {visible ? "Ocultar" : "Mostrar"}
         </button>
@@ -64,11 +71,12 @@ export default function PasswordField({
 
         <button
           type="button"
-          onClick={() => setVisible((current) => !current)}
+          onClick={toggleVisibility}
           className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:hidden"
           disabled={disabled}
-          tabIndex={-1}
           aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+          aria-pressed={visible}
+          tabIndex={-1}
         >
           {visible ? "Ocultar" : "Mostrar"}
         </button>

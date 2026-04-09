@@ -444,52 +444,52 @@ function getMainTimeClasses(status: string) {
   const normalized = status.trim().toLowerCase();
 
   if (normalized === "pendiente") {
-    return "text-[2.1rem] font-black tracking-tight text-red-700 sm:text-[2.45rem]";
+    return "text-[1.75rem] font-black tracking-tight text-red-700 sm:text-[2.15rem] lg:text-[2.35rem]";
   }
 
   if (normalized === "hecho" || normalized === "terminado") {
-    return "text-[2.1rem] font-black tracking-tight text-sky-700 sm:text-[2.45rem]";
+    return "text-[1.75rem] font-black tracking-tight text-sky-700 sm:text-[2.15rem] lg:text-[2.35rem]";
   }
 
   if (normalized === "facturado") {
-    return "text-[2.1rem] font-black tracking-tight text-indigo-700 sm:text-[2.45rem]";
+    return "text-[1.75rem] font-black tracking-tight text-indigo-700 sm:text-[2.15rem] lg:text-[2.35rem]";
   }
 
   if (normalized === "cancelado") {
-    return "text-[2.1rem] font-black tracking-tight text-amber-900 sm:text-[2.45rem]";
+    return "text-[1.75rem] font-black tracking-tight text-amber-900 sm:text-[2.15rem] lg:text-[2.35rem]";
   }
 
   if (normalized === "archivado") {
-    return "text-[2.1rem] font-black tracking-tight text-slate-600 sm:text-[2.45rem]";
+    return "text-[1.75rem] font-black tracking-tight text-slate-600 sm:text-[2.15rem] lg:text-[2.35rem]";
   }
 
-  return "text-[2.1rem] font-black tracking-tight text-slate-800 sm:text-[2.45rem]";
+  return "text-[1.75rem] font-black tracking-tight text-slate-800 sm:text-[2.15rem] lg:text-[2.35rem]";
 }
 
 function getDurationClasses(status: string) {
   const normalized = status.trim().toLowerCase();
 
   if (normalized === "pendiente") {
-    return "inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-lg font-bold text-red-700";
+    return "inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-base font-bold text-red-700 sm:text-lg";
   }
 
   if (normalized === "hecho" || normalized === "terminado") {
-    return "inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-lg font-bold text-sky-700";
+    return "inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-base font-bold text-sky-700 sm:text-lg";
   }
 
   if (normalized === "facturado") {
-    return "inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-lg font-bold text-indigo-700";
+    return "inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-base font-bold text-indigo-700 sm:text-lg";
   }
 
   if (normalized === "cancelado") {
-    return "inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-lg font-bold text-amber-900";
+    return "inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-base font-bold text-amber-900 sm:text-lg";
   }
 
   if (normalized === "archivado") {
-    return "inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-3 py-1.5 text-lg font-bold text-slate-700";
+    return "inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-3 py-1.5 text-base font-bold text-slate-700 sm:text-lg";
   }
 
-  return "inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-lg font-bold text-slate-700";
+  return "inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-base font-bold text-slate-700 sm:text-lg";
 }
 
 function getTimelineJobClasses(status: string) {
@@ -1084,15 +1084,17 @@ function renderSummaryCard({
 }) {
   return (
     <div
-      className={`rounded-3xl border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
+      className={`rounded-3xl border p-4 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm sm:p-5 ${cardClasses}`}
     >
-      <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">
         {title}
       </p>
-      <p className={`mt-2 text-4xl font-black leading-none ${valueClasses}`}>
+      <p
+        className={`mt-2 text-3xl font-black leading-none sm:text-4xl ${valueClasses}`}
+      >
         {value}
       </p>
-      <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>
     </div>
   );
 }
@@ -1123,15 +1125,15 @@ function renderTrabajoCard(
     <article
       id={`trabajo-${trabajo.id}`}
       key={trabajo.id}
-      className={`scroll-mt-24 rounded-3xl border px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ring-offset-2 target:ring-2 target:ring-sky-300 sm:px-4 sm:py-2 ${getTrabajoCardClasses(
+      className={`scroll-mt-24 rounded-3xl border px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ring-offset-2 target:ring-2 target:ring-sky-300 sm:px-5 sm:py-4 ${getTrabajoCardClasses(
         trabajo.status
       )}`}
     >
-      <div className="grid gap-2">
-        <div className="flex flex-col gap-1 lg:flex-row lg:items-start lg:justify-between">
+      <div className="grid gap-3">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xl font-bold leading-tight text-slate-900 sm:text-2xl">
+              <p className="text-lg font-bold leading-tight text-slate-900 sm:text-2xl">
                 {trabajo.client_name}
               </p>
 
@@ -1149,12 +1151,12 @@ function renderTrabajoCard(
             </div>
 
             {showArchivedDate ? (
-              <p className="mt-0.5 text-sm font-medium text-slate-500 sm:text-base">
+              <p className="mt-1 text-sm font-medium text-slate-500 sm:text-base">
                 Fecha del trabajo: {formatDateLabel(trabajo.work_date)}
               </p>
             ) : null}
 
-            <div className="mt-0.5 flex flex-col gap-1.5 md:flex-row md:items-center md:gap-3">
+            <div className="mt-1.5 flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
               <p className={getMainTimeClasses(trabajo.status)}>
                 {formatTime(trabajo.start_time)} -{" "}
                 {addMinutes(trabajo.start_time, trabajo.duration_minutes)}
@@ -1166,13 +1168,13 @@ function renderTrabajoCard(
             </div>
 
             {showCancelledNotice ? (
-              <p className="mt-1 text-sm font-semibold text-amber-900">
+              <p className="mt-2 text-sm font-semibold leading-6 text-amber-900">
                 {cancelledSummary}
               </p>
             ) : null}
           </div>
 
-          <div className="flex items-start gap-2 lg:pl-3">
+          <div className="flex flex-wrap items-start gap-2 lg:pl-3">
             {!showCancelledNotice ? (
               <span
                 className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-bold sm:text-sm ${getStatusClasses(
@@ -1207,11 +1209,11 @@ function renderTrabajoCard(
           </div>
         </div>
 
-        <div className="grid gap-1.5 lg:grid-cols-[1.7fr_1fr]">
-          <div className="grid gap-1.5 sm:grid-cols-3">
+        <div className="grid gap-3 xl:grid-cols-[1.7fr_1fr]">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {trabajo.phone ? (
-              <div className="rounded-2xl bg-white/75 px-3 py-2">
-                <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-2xl bg-white/75 px-3 py-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">
                   Teléfono
                 </p>
                 <p className="mt-0.5 text-base font-semibold leading-tight text-slate-800 sm:text-lg">
@@ -1221,8 +1223,8 @@ function renderTrabajoCard(
             ) : null}
 
             {trabajo.address ? (
-              <div className="rounded-2xl bg-white/75 px-3 py-2">
-                <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-2xl bg-white/75 px-3 py-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">
                   Dirección
                 </p>
                 <p className="mt-0.5 text-base font-semibold leading-tight text-slate-800 sm:text-lg">
@@ -1232,8 +1234,8 @@ function renderTrabajoCard(
             ) : null}
 
             {trabajo.notes ? (
-              <div className="rounded-2xl bg-white/75 px-3 py-2">
-                <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-2xl bg-white/75 px-3 py-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">
                   Nota
                 </p>
                 <p className="mt-0.5 text-base font-semibold leading-tight text-slate-800 sm:text-lg">
@@ -1243,14 +1245,14 @@ function renderTrabajoCard(
             ) : null}
           </div>
 
-          <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-1.5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">
               Seguimiento del estado
             </p>
 
-            <div className="mt-1 grid gap-1.5">
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2">
-                <p className="text-[0.8rem] font-semibold uppercase tracking-wide text-red-700">
+            <div className="mt-2 grid gap-2">
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2.5">
+                <p className="text-[0.78rem] font-semibold uppercase tracking-wide text-red-700">
                   Comprometida
                 </p>
                 <p className="mt-1 text-sm font-bold leading-tight text-red-900 sm:text-base">
@@ -1260,8 +1262,8 @@ function renderTrabajoCard(
 
               {!showCancelledNotice ? (
                 <>
-                  <div className="rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2">
-                    <p className="text-[0.8rem] font-semibold uppercase tracking-wide text-sky-700">
+                  <div className="rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2.5">
+                    <p className="text-[0.78rem] font-semibold uppercase tracking-wide text-sky-700">
                       Hecha
                     </p>
                     <p className="mt-1 text-sm font-bold leading-tight text-sky-900 sm:text-base">
@@ -1269,8 +1271,8 @@ function renderTrabajoCard(
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2">
-                    <p className="text-[0.8rem] font-semibold uppercase tracking-wide text-indigo-700">
+                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2.5">
+                    <p className="text-[0.78rem] font-semibold uppercase tracking-wide text-indigo-700">
                       Facturada
                     </p>
                     <p className="mt-1 text-sm font-bold leading-tight text-indigo-900 sm:text-base">
@@ -1281,8 +1283,8 @@ function renderTrabajoCard(
               ) : null}
 
               {showCancelledTracking ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2">
-                  <p className="text-[0.8rem] font-semibold uppercase tracking-wide text-amber-800">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+                  <p className="text-[0.78rem] font-semibold uppercase tracking-wide text-amber-800">
                     Cancelada
                   </p>
                   <p className="mt-1 text-sm font-bold leading-tight text-amber-950 sm:text-base">
@@ -1583,15 +1585,15 @@ function renderSharedAgendaSection(params: {
   const { owner, data, hasActiveFilters, errorMessage } = params;
 
   return (
-    <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
+    <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
       <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4 sm:px-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
           Solo lectura
         </p>
         <p className="mt-2 text-lg font-bold text-slate-900 sm:text-xl">
           Estás viendo la agenda de {owner.label}
         </p>
-        <p className="mt-1 text-sm text-slate-600 sm:text-base">
+        <p className="mt-1 text-sm leading-6 text-slate-600 sm:text-base">
           Puedes consultarla completa, pero no editar trabajos, no cambiar
           estados y no tocar la agenda ajena.
         </p>
@@ -1599,18 +1601,18 @@ function renderSharedAgendaSection(params: {
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-sm">
             Agenda compartida
           </p>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Agenda de {owner.label}
           </h2>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">
+          <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
             Vista en solo lectura de la agenda del profesional conectado.
           </p>
         </div>
 
-        <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700">
+        <span className="inline-flex items-center self-start rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 sm:self-auto">
           Solo lectura
         </span>
       </div>
@@ -1625,7 +1627,7 @@ function renderSharedAgendaSection(params: {
         </div>
       ) : (
         <>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {renderSummaryCard({
               title: "Comprometidos",
               value: data.committedCount,
@@ -1664,14 +1666,14 @@ function renderSharedAgendaSection(params: {
               <section
                 id={`shared-${owner.userId}-day-${dayItem.date}`}
                 key={`${owner.userId}-${dayItem.date}`}
-                className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
+                className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
                   dayItem.isSunday
                 )}`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                      <h3 className="text-xl font-bold text-slate-900 sm:text-3xl">
                         {dayItem.label}
                       </h3>
 
@@ -1682,7 +1684,7 @@ function renderSharedAgendaSection(params: {
                       ) : null}
                     </div>
 
-                    <p className="mt-2 text-base text-slate-500 sm:text-lg">
+                    <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-lg">
                       {dayItem.items.length === 0
                         ? "Sin trabajos visibles este día."
                         : `${dayItem.items.length} trabajo${
@@ -1691,14 +1693,14 @@ function renderSharedAgendaSection(params: {
                     </p>
                   </div>
 
-                  <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-base font-bold text-slate-700 sm:text-lg">
+                  <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 sm:text-base">
                     Solo lectura
                   </span>
                 </div>
 
                 {!dayItem.isNonWorkingDay && dayItem.items.length > 0 ? (
                   <div
-                    className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
+                    className={`mt-5 rounded-[2rem] border p-3.5 sm:p-4 ${getInnerPanelClasses(
                       dayItem.isSunday
                     )}`}
                   >
@@ -1810,7 +1812,7 @@ function renderSharedAgendaSection(params: {
                           return (
                             <div
                               key={`shared-timeline-job-${owner.userId}-${trabajo.id}`}
-                              className={`absolute left-3 right-3 overflow-hidden rounded-2xl border px-4 py-2 shadow-sm ${getTimelineJobClasses(
+                              className={`absolute left-2.5 right-2.5 overflow-hidden rounded-2xl border px-3 py-2 shadow-sm sm:left-3 sm:right-3 sm:px-4 ${getTimelineJobClasses(
                                 trabajo.status
                               )}`}
                               style={getTimelineBlockStyle({
@@ -1825,7 +1827,7 @@ function renderSharedAgendaSection(params: {
                               title={`${trabajo.client_name}`}
                             >
                               <div className="flex h-full items-center justify-between gap-3 overflow-hidden whitespace-nowrap">
-                                <div className="min-w-0 flex-1 truncate text-[15px] font-bold tabular-nums sm:text-base">
+                                <div className="min-w-0 flex-1 truncate text-[14px] font-bold tabular-nums sm:text-base">
                                   <span className="font-black">
                                     {trabajo.client_name}
                                   </span>
@@ -1883,18 +1885,18 @@ function renderSharedAgendaSection(params: {
             ))}
           </div>
 
-          <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/86 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+          <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/86 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                   Archivados de {owner.label}
                 </h3>
-                <p className="mt-2 text-base text-slate-500 sm:text-lg">
+                <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-lg">
                   Vista en solo lectura de los trabajos archivados.
                 </p>
               </div>
 
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-base font-bold text-slate-700 sm:text-lg">
+              <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 sm:self-auto sm:text-base">
                 {data.archivedTrabajos.length} archivado
                 {data.archivedTrabajos.length === 1 ? "" : "s"}
               </span>
@@ -2118,15 +2120,15 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       : formatDateLabel(anchorDate);
 
   return (
-    <main className="min-h-screen bg-transparent px-4 py-6 text-slate-900 sm:px-6">
+    <main className="min-h-screen bg-transparent px-4 py-4 text-slate-900 sm:px-6 sm:py-6">
       <div className="mx-auto max-w-6xl">
         <InternalTopbar />
         <AgendaAutoRefresh ownerIds={ownerIds} intervalMs={3000} />
 
-        <div className="rounded-[2rem] border border-white/70 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+        <div className="rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-sm">
                 AutonomoAgenda
               </p>
 
@@ -2134,29 +2136,29 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 Tu agenda de trabajo
               </h1>
 
-              <p className="mt-4 max-w-3xl text-base text-slate-600 sm:text-lg">
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-lg">
                 Consulta de un vistazo tu semana de trabajo y revisa qué huecos
                 libres te quedan para encajar trabajos.
               </p>
 
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm leading-6 text-slate-500">
                 Semana visible: {weekRangeLabel}. Jornada provisional calculada
                 de {WORK_DAY_START} a {WORK_DAY_END}.
               </p>
 
               <div
                 className={`mt-5 grid gap-3 ${
-                  sharedOwners.length > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1"
+                  sharedOwners.length > 0 ? "md:grid-cols-2" : "md:grid-cols-1"
                 }`}
               >
                 <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-4">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 sm:text-sm">
                     Tu zona
                   </p>
                   <p className="mt-2 text-lg font-bold text-slate-900">
                     Mi agenda · editable
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
                     Aquí puedes crear trabajos, editar, cambiar estados y
                     moverte con total normalidad.
                   </p>
@@ -2164,13 +2166,13 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
                 {sharedOwners.length > 0 ? (
                   <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
                       Compartida
                     </p>
                     <p className="mt-2 text-lg font-bold text-slate-900">
                       Agenda ajena · solo lectura
                     </p>
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
                       También puedes consultar{" "}
                       {sharedOwners.length === 1
                         ? "1 agenda compartida"
@@ -2182,22 +2184,22 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 sm:items-end">
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+            <div className="flex w-full flex-col gap-3 lg:w-auto lg:items-end">
+              <span className="inline-flex items-center self-start rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm lg:self-auto">
                 {weekRangeLabel}
               </span>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto">
                 <Link
                   href={previousWeekHref}
-                  className="rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   Semana anterior
                 </Link>
 
                 <Link
                   href={todayHref}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 ${
+                  className={`inline-flex min-h-[48px] items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 ${
                     isCurrentWeek
                       ? "border-slate-900 bg-slate-900 text-white"
                       : "border-slate-200/80 bg-white/90 text-slate-700 hover:bg-white"
@@ -2208,7 +2210,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
                 <Link
                   href={nextWeekHref}
-                  className="rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   Semana siguiente
                 </Link>
@@ -2217,11 +2219,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-5">
           <QuickAddJobForm />
         </div>
 
-        <div className="mt-6">
+        <div className="mt-5">
           <AgendaFilters
             initialQuery={query}
             initialStatus={status}
@@ -2235,23 +2237,23 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           />
         </div>
 
-        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+        <section className="mt-5 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                 Mi agenda
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-slate-600">
                 Tu zona de trabajo completa, con edición y acciones.
               </p>
             </div>
 
-            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+            <span className="inline-flex items-center self-start rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 sm:self-auto">
               Editable
             </span>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {renderSummaryCard({
               title: `${summaryDateLabel} · Comprometidos`,
               value: ownAgendaData.committedCount,
@@ -2287,19 +2289,19 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         </section>
 
         {!hasActiveFilters && !error ? (
-          <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+          <section className="mt-5 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
                   Semana en un vistazo
                 </h2>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm leading-6 text-slate-600">
                   Para detectar rápido qué día conviene aprovechar dentro de esa
                   semana.
                 </p>
               </div>
 
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+              <span className="inline-flex items-center self-start rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm sm:self-auto">
                 {weekRangeLabel}
               </span>
             </div>
@@ -2429,7 +2431,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           </section>
         ) : null}
 
-        <div className="mt-6">
+        <div className="mt-5">
           {error ? (
             <div className="rounded-[2rem] border border-red-200 bg-red-50 p-6 text-base text-red-700 shadow-sm">
               Error al cargar trabajos: {error.message}
@@ -2445,14 +2447,14 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                   <section
                     id={`day-${dayItem.date}`}
                     key={dayItem.date}
-                    className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
+                    className={`scroll-mt-24 overflow-hidden rounded-[2rem] border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] sm:p-6 ${getDaySectionClasses(
                       dayItem.isSunday
                     )}`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
-                          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                          <h2 className="text-xl font-bold text-slate-900 sm:text-3xl">
                             {dayItem.label}
                           </h2>
 
@@ -2463,7 +2465,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                           ) : null}
                         </div>
 
-                        <p className="mt-2 text-base text-slate-500 sm:text-lg">
+                        <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-lg">
                           {dayItem.isNonWorkingDay
                             ? dayItem.items.length > 0
                               ? `Día de descanso. Hay ${dayItem.items.length} trabajo${
@@ -2485,7 +2487,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                       </div>
 
                       <span
-                        className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-4 py-2 text-base font-bold sm:text-lg ${
+                        className={`inline-flex shrink-0 items-center self-start whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold sm:self-auto sm:text-base ${
                           dayItem.isNonWorkingDay
                             ? "bg-rose-100 text-rose-700"
                             : hasActiveFilters
@@ -2521,21 +2523,21 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="text-lg font-bold text-rose-800 sm:text-xl">
                                     Descanso semanal
                                   </p>
-                                  <p className="mt-2 text-sm text-rose-700 sm:text-base">
+                                  <p className="mt-2 text-sm leading-6 text-rose-700 sm:text-base">
                                     Este día queda cerrado por descanso. No se
                                     generan huecos automáticos ni disponibilidad
                                     sugerida.
                                   </p>
 
                                   {dayItem.items.length > 0 ? (
-                                    <p className="mt-3 text-sm font-medium text-rose-800">
+                                    <p className="mt-3 text-sm font-medium leading-6 text-rose-800">
                                       Los trabajos que ya hayas guardado para
                                       este día se siguen mostrando abajo.
                                     </p>
                                   ) : null}
                                 </div>
 
-                                <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700">
+                                <span className="inline-flex shrink-0 items-center self-start whitespace-nowrap rounded-full border border-rose-300 bg-white px-4 py-2 text-sm font-bold text-rose-700 sm:self-auto">
                                   No laborable
                                 </span>
                               </div>
@@ -2544,7 +2546,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                         ) : (
                           <>
                             <div
-                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-3.5 sm:p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2553,7 +2555,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="text-base font-bold text-slate-800 sm:text-lg">
                                     Agenda visual del día
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Vista vertical tipo calendario para detectar
                                     rápido bloques ocupados y huecos reales.
                                   </p>
@@ -2583,7 +2585,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="mt-1 text-2xl font-black leading-none text-slate-900">
                                     {dayItem.blockingItems.length}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Bloques que ocupan tiempo real.
                                   </p>
                                 </div>
@@ -2595,7 +2597,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="mt-1 text-2xl font-black leading-none text-slate-900">
                                     {formatGapLabel(dayItem.visibleWindowMinutes)}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Desde{" "}
                                     {minutesToTime(dayItem.visibleDayStartMinutes)}
                                     .
@@ -2609,7 +2611,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="mt-1 text-2xl font-black leading-none text-slate-900">
                                     {dayItem.firstFreeTime ?? "--:--"}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Primer momento desde el que todavía puedes
                                     encajar.
                                   </p>
@@ -2624,7 +2626,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                       ? formatGapLabel(dayItem.longestGap.minutes)
                                       : "0 min"}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     {dayItem.longestGap
                                       ? `${dayItem.longestGap.start} - ${dayItem.longestGap.end}`
                                       : "Sin hueco suficiente"}
@@ -2735,7 +2737,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                             suggestedDuration,
                                             selectedSharedUserId
                                           )}
-                                          className="absolute left-3 right-3 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-2 transition hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm"
+                                          className="absolute left-2.5 right-2.5 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 transition hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-sm sm:left-3 sm:right-3 sm:px-4"
                                           style={getTimelineGapBlockStyle({
                                             startMinutes: gapStartMinutes,
                                             endMinutes: gapEndMinutes,
@@ -2749,7 +2751,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                           title={`Crear trabajo el ${dayItem.label} a las ${gap.start}`}
                                         >
                                           <div className="flex h-full items-center overflow-hidden whitespace-nowrap">
-                                            <div className="min-w-0 truncate text-[15px] font-bold tabular-nums text-emerald-900 sm:text-base">
+                                            <div className="min-w-0 truncate text-[14px] font-bold tabular-nums text-emerald-900 sm:text-base">
                                               <span className="font-black uppercase tracking-wide text-emerald-700">
                                                 Hueco libre
                                               </span>
@@ -2776,7 +2778,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                     return (
                                       <div
                                         key={`timeline-short-gap-${dayItem.date}-${gap.start}-${gap.end}`}
-                                        className="absolute left-3 right-3 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-2"
+                                        className="absolute left-2.5 right-2.5 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 sm:left-3 sm:right-3 sm:px-4"
                                         style={getTimelineGapBlockStyle({
                                           startMinutes: gapStartMinutes,
                                           endMinutes: gapEndMinutes,
@@ -2790,7 +2792,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                         title={`Tramo libre corto: ${gap.start} - ${gap.end}`}
                                       >
                                         <div className="flex h-full items-center overflow-hidden whitespace-nowrap">
-                                          <div className="min-w-0 truncate text-[15px] font-bold tabular-nums text-emerald-900 sm:text-base">
+                                          <div className="min-w-0 truncate text-[14px] font-bold tabular-nums text-emerald-900 sm:text-base">
                                             <span className="font-black uppercase tracking-wide text-emerald-700">
                                               Libre corto
                                             </span>
@@ -2830,7 +2832,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                           anchorDate,
                                           selectedSharedUserId
                                         )}
-                                        className={`absolute left-3 right-3 overflow-hidden rounded-2xl border px-4 py-2 shadow-sm transition hover:shadow-md ${getTimelineJobClasses(
+                                        className={`absolute left-2.5 right-2.5 overflow-hidden rounded-2xl border px-3 py-2 shadow-sm transition hover:shadow-md sm:left-3 sm:right-3 sm:px-4 ${getTimelineJobClasses(
                                           trabajo.status
                                         )}`}
                                         style={getTimelineBlockStyle({
@@ -2847,7 +2849,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                         title={`Editar trabajo de ${trabajo.client_name}`}
                                       >
                                         <div className="flex h-full items-center justify-between gap-3 overflow-hidden whitespace-nowrap">
-                                          <div className="min-w-0 flex-1 truncate text-[15px] font-bold tabular-nums sm:text-base">
+                                          <div className="min-w-0 flex-1 truncate text-[14px] font-bold tabular-nums sm:text-base">
                                             <span className="font-black">
                                               {trabajo.client_name}
                                             </span>
@@ -2892,7 +2894,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                             </div>
 
                             <div
-                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-3.5 sm:p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2958,7 +2960,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                             </div>
 
                             <div
-                              className={`mt-5 rounded-[2rem] border p-4 ${getInnerPanelClasses(
+                              className={`mt-5 rounded-[2rem] border p-3.5 sm:p-4 ${getInnerPanelClasses(
                                 dayItem.isSunday
                               )}`}
                             >
@@ -2979,7 +2981,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                 </div>
                               </div>
 
-                              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
                                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                                     Horas libres
@@ -2987,7 +2989,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="mt-1 text-2xl font-black leading-none text-slate-900">
                                     {formatGapLabel(dayItem.totalFreeMinutes)}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Tiempo disponible real que queda ese día.
                                   </p>
                                 </div>
@@ -2999,7 +3001,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                   <p className="mt-1 text-2xl font-black leading-none text-slate-900">
                                     {dayItem.firstFreeTime ?? "--:--"}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     Primer momento desde el que todavía puedes
                                     encajar.
                                   </p>
@@ -3016,7 +3018,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                         )
                                       : "0 min"}
                                   </p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                  <p className="mt-1 text-sm leading-6 text-slate-500">
                                     {dayItem.longestGap
                                       ? `${dayItem.longestGap.start} - ${dayItem.longestGap.end}`
                                       : "Sin huecos suficientes"}
@@ -3061,7 +3063,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                             <p className="mt-2 text-2xl font-black leading-none text-slate-900 sm:text-[2rem]">
                                               {gap.start} - {gap.end}
                                             </p>
-                                            <p className="mt-2 text-sm font-medium text-slate-600">
+                                            <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
                                               Espacio libre de{" "}
                                               {formatGapLabel(gap.minutes)}
                                             </p>
@@ -3072,8 +3074,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                           </span>
                                         </div>
 
-                                        <div className="mt-4 flex items-center justify-between gap-3">
-                                          <div className="text-sm text-slate-500">
+                                        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                          <div className="text-sm leading-6 text-slate-500">
                                             Se propone empezar a las{" "}
                                             <span className="font-bold text-slate-700">
                                               {gap.start}
@@ -3085,7 +3087,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                                             .
                                           </div>
 
-                                          <span className="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition group-hover:bg-emerald-700">
+                                          <span className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition group-hover:bg-emerald-700">
                                             Encajar aquí
                                           </span>
                                         </div>
@@ -3119,19 +3121,19 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                 ))}
               </div>
 
-              <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+              <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                       Trabajos archivados
                     </h2>
-                    <p className="mt-2 text-base text-slate-500 sm:text-lg">
+                    <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-lg">
                       Aquí quedan guardados hasta que el autónomo decida
                       eliminarlos definitivamente.
                     </p>
                   </div>
 
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-base font-bold text-slate-700 sm:text-lg">
+                  <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 sm:self-auto sm:text-base">
                     {ownAgendaData.archivedTrabajos.length} archivado
                     {ownAgendaData.archivedTrabajos.length === 1 ? "" : "s"}
                   </span>
@@ -3162,16 +3164,16 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               </div>
             ) : null}
 
-            <section className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+            <section className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
                     Compartida
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
                     Elige qué agenda compartida quieres ver
                   </h2>
-                  <p className="mt-2 text-sm text-slate-600 sm:text-base">
+                  <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
                     Aquí siempre estás entrando en una agenda ajena en solo
                     lectura. Solo se muestra una cada vez para que la pantalla
                     quede más limpia.

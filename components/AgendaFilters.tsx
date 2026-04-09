@@ -82,10 +82,10 @@ export default function AgendaFilters({
   });
 
   return (
-    <section className="rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section className="rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+      <div className="flex flex-col gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 sm:text-2xl">
             Buscar y filtrar trabajos
           </h2>
 
@@ -132,7 +132,7 @@ export default function AgendaFilters({
           <input type="hidden" name="shared" value={initialShared} />
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_1fr_auto]">
+        <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr_1fr_auto] xl:items-end">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-slate-700">
               Buscar texto
@@ -141,7 +141,7 @@ export default function AgendaFilters({
               type="text"
               name="q"
               defaultValue={initialQuery}
-              className="rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+              className="min-h-[52px] rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 sm:text-base"
               placeholder="Cliente, teléfono, dirección o nota"
             />
           </label>
@@ -151,7 +151,7 @@ export default function AgendaFilters({
             <select
               name="status"
               defaultValue={initialStatus}
-              className="rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+              className="min-h-[52px] rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 sm:text-base"
             >
               {STATUS_OPTIONS.map((option) => (
                 <option
@@ -169,7 +169,7 @@ export default function AgendaFilters({
             <select
               name="day"
               defaultValue={initialDay}
-              className="rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+              className="min-h-[52px] rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 sm:text-base"
             >
               <option value="">Todos los días</option>
 
@@ -181,17 +181,17 @@ export default function AgendaFilters({
             </select>
           </label>
 
-          <div className="flex flex-col justify-end gap-3 sm:flex-row lg:flex-col xl:flex-row">
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[220px] xl:grid-cols-1">
             <button
               type="submit"
-              className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
             >
               Filtrar
             </button>
 
             <Link
               href={clearHref}
-              className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
             >
               Limpiar filtros
             </Link>

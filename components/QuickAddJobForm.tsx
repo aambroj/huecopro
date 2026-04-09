@@ -460,7 +460,7 @@ export default function QuickAddJobForm() {
   const firstAvailableTime = selectableTimes[0] ?? null;
 
   const inputClasses =
-    "rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
+    "min-h-[52px] rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 sm:text-base";
 
   return (
     <>
@@ -476,8 +476,8 @@ export default function QuickAddJobForm() {
         id="quick-add-job-form"
         className={
           isQuickModalOpen
-            ? "fixed inset-x-4 top-4 z-50 mx-auto max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/70 bg-white/92 p-5 shadow-[0_30px_90px_rgba(15,23,42,0.30)] backdrop-blur-xl sm:top-8 sm:p-6"
-            : "rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6"
+            ? "fixed inset-x-3 top-3 bottom-3 z-50 mx-auto w-auto overflow-y-auto rounded-[2rem] border border-white/70 bg-white/92 p-4 shadow-[0_30px_90px_rgba(15,23,42,0.30)] backdrop-blur-xl sm:inset-x-6 sm:top-6 sm:bottom-6 sm:max-w-3xl sm:p-6"
+            : "scroll-mt-24 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6"
         }
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -485,7 +485,7 @@ export default function QuickAddJobForm() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               Alta rápida
             </p>
-            <h2 className="mt-1.5 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+            <h2 className="mt-1.5 text-lg font-bold tracking-tight text-slate-900 sm:text-2xl">
               Añadir trabajo a tu agenda
             </h2>
             <p className="mt-1.5 text-sm leading-6 text-slate-600 sm:text-base">
@@ -497,7 +497,7 @@ export default function QuickAddJobForm() {
             <button
               type="button"
               onClick={closeQuickModal}
-              className="inline-flex self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50"
+              className="inline-flex min-h-[46px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 sm:min-h-0 sm:w-auto sm:rounded-full"
             >
               Cerrar
             </button>
@@ -511,13 +511,13 @@ export default function QuickAddJobForm() {
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
                   Hueco elegido
                 </p>
-                <p className="mt-1.5 text-sm text-emerald-700 sm:text-base">
+                <p className="mt-1.5 text-sm leading-6 text-emerald-700 sm:text-base">
                   {formatLongDate(queryDate)} · {queryTime} ·{" "}
                   {formatDurationLabel(Number(queryDuration))}
                 </p>
               </div>
 
-              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+              <span className="inline-flex w-fit items-center rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
                 Preparado desde la agenda
               </span>
             </div>
@@ -533,7 +533,7 @@ export default function QuickAddJobForm() {
         ) : null}
 
         <form onSubmit={handleSubmit} className="mt-5 grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-slate-700">
                 Cliente *
@@ -587,7 +587,7 @@ export default function QuickAddJobForm() {
             />
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-slate-700">
                 Fecha *
@@ -669,7 +669,7 @@ export default function QuickAddJobForm() {
             </label>
           </div>
 
-          <p className="-mt-1 text-xs font-medium text-slate-500">
+          <p className="-mt-1 text-xs font-medium leading-5 text-slate-500">
             Puedes programar trabajos hasta el {formatShortDate(agendaMaxDate)}.
           </p>
 
@@ -682,7 +682,7 @@ export default function QuickAddJobForm() {
                 No se ofrecen horas libres automáticas para ese día.
               </div>
             ) : loadingAvailability ? (
-              <div className="text-sm text-slate-700">
+              <div className="text-sm leading-6 text-slate-700">
                 Cargando horas libres para{" "}
                 <span className="font-semibold">
                   {formatDurationLabel(selectedDurationMinutes)}
@@ -690,7 +690,7 @@ export default function QuickAddJobForm() {
                 ...
               </div>
             ) : availabilityError ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
                 {availabilityError}
               </div>
             ) : noSlotsAvailable ? (
@@ -709,7 +709,7 @@ export default function QuickAddJobForm() {
                 </div>
 
                 {firstAvailableTime ? (
-                  <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+                  <div className="inline-flex w-fit items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
                     Primera hora libre: {firstAvailableTime}
                   </div>
                 ) : null}
@@ -718,7 +718,7 @@ export default function QuickAddJobForm() {
           </div>
 
           <div className="rounded-3xl border border-slate-200/80 bg-white px-4 py-4 shadow-sm">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-800">
                   Resumen rápido
@@ -732,7 +732,7 @@ export default function QuickAddJobForm() {
                 </p>
               </div>
 
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
+              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
                 Se guarda en mi agenda
               </span>
             </div>
@@ -754,18 +754,18 @@ export default function QuickAddJobForm() {
           </label>
 
           {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
               {error}
             </div>
           ) : null}
 
           {success ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
               {success}
             </div>
           ) : null}
 
-          <div className="flex justify-end">
+          <div className="grid gap-3 pt-1 sm:flex sm:justify-end">
             <button
               type="submit"
               disabled={
@@ -777,7 +777,7 @@ export default function QuickAddJobForm() {
                 !startTime ||
                 !trimmedClientName
               }
-              className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {saving ? "Guardando..." : "Guardar trabajo"}
             </button>
