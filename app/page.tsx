@@ -72,6 +72,11 @@ const faqItems = [
       "Sí. La agenda compartida está pensada para ver la agenda del otro en solo lectura, sin editarla.",
   },
   {
+    question: "¿Cuántas agendas puedo compartir?",
+    answer:
+      "Ahora mismo no hemos fijado un límite máximo cerrado en la app. Puedes compartir tu agenda con varios profesionales, siempre que también estén registrados.",
+  },
+  {
     question: "¿Cada profesional necesita su propia cuenta?",
     answer:
       "Sí. Cada uno trabaja con su propia cuenta y su propia agenda.",
@@ -130,12 +135,13 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-              Encaja trabajos sin liarte con una agenda pesada
+              Encaja trabajos rápido y sin liarte con la agenda del autónomo
             </h1>
 
             <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-sky-800 sm:text-lg">
               Puedes compartir tu agenda con los profesionales que desees,
-              siempre que también estén registrados.
+              siempre que también estén registrados: socios, compañeros o
+              empleados.
             </p>
 
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
@@ -158,14 +164,14 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/registro"
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold !text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 hover:!text-white"
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold !text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 hover:!text-white sm:w-auto"
               >
                 Crear cuenta
               </Link>
 
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white/85 px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-white"
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/80 bg-white/85 px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-white sm:w-auto"
               >
                 Ya tengo cuenta
               </Link>
@@ -288,7 +294,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {steps.map((item, index) => (
               <article
                 key={item.title}
@@ -329,7 +335,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-3xl border border-white/20 bg-slate-900/40 p-5 backdrop-blur">
               <p className="text-lg font-bold !text-white">Cuenta propia</p>
               <p className="mt-2 text-sm leading-6 !text-slate-100">
@@ -422,14 +428,14 @@ export default function HomePage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/registro"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold !text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 hover:!text-white"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-6 py-3.5 text-base font-bold !text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 hover:!text-white sm:w-auto"
             >
               Registrarme
             </Link>
 
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300/80 bg-white px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/80 bg-white px-6 py-3.5 text-base font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
             >
               Entrar a mi cuenta
             </Link>
