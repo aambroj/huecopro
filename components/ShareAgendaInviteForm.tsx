@@ -12,7 +12,7 @@ export default function ShareAgendaInviteForm() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const inputClasses =
-    "rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
+    "w-full min-w-0 rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,8 +54,8 @@ export default function ShareAgendaInviteForm() {
   }
 
   return (
-    <div className="rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-      <div>
+    <section className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+      <div className="min-w-0">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
           Nueva conexión
         </p>
@@ -75,10 +75,11 @@ export default function ShareAgendaInviteForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="mt-5 grid gap-4">
-        <label className="grid gap-2">
+        <label className="grid min-w-0 gap-2">
           <span className="text-sm font-semibold text-slate-700">
             Email del compañero
           </span>
+
           <input
             type="email"
             value={email}
@@ -89,10 +90,11 @@ export default function ShareAgendaInviteForm() {
           />
         </label>
 
-        <label className="grid gap-2">
+        <label className="grid min-w-0 gap-2">
           <span className="text-sm font-semibold text-slate-700">
             Cómo quieres identificarlo tú (opcional)
           </span>
+
           <input
             type="text"
             value={alias}
@@ -101,7 +103,8 @@ export default function ShareAgendaInviteForm() {
             maxLength={60}
             className={inputClasses}
           />
-          <p className="text-xs font-medium text-slate-500">
+
+          <p className="text-xs font-medium leading-5 text-slate-500">
             Este nombre te servirá a ti para ver mejor su agenda luego.
           </p>
         </label>
@@ -126,27 +129,27 @@ export default function ShareAgendaInviteForm() {
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
             {error}
           </div>
         ) : null}
 
         {success ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
             {success}
           </div>
         ) : null}
 
-        <div className="flex justify-end">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <button
             type="submit"
             disabled={sending}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             {sending ? "Enviando..." : "Enviar invitación"}
           </button>
         </div>
       </form>
-    </div>
+    </section>
   );
 }

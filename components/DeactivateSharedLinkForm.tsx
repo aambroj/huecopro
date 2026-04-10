@@ -40,7 +40,7 @@ export default function DeactivateSharedLinkForm({
   }, [links, selectedLinkId]);
 
   const inputClasses =
-    "rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60";
+    "w-full min-w-0 rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60";
 
   async function handleDeactivate() {
     if (!selectedLink) return;
@@ -86,9 +86,9 @@ export default function DeactivateSharedLinkForm({
   }
 
   return (
-    <section className="rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <section className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-700">
             Gestión de conexión
           </p>
@@ -103,7 +103,7 @@ export default function DeactivateSharedLinkForm({
           </p>
         </div>
 
-        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+        <span className="inline-flex items-center self-start rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm sm:self-auto">
           {links.length} activa{links.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -114,7 +114,7 @@ export default function DeactivateSharedLinkForm({
         </div>
       ) : (
         <div className="mt-5 grid gap-4">
-          <label className="grid gap-2">
+          <label className="grid min-w-0 gap-2">
             <span className="text-sm font-semibold text-slate-700">
               Profesional conectado
             </span>
@@ -138,10 +138,10 @@ export default function DeactivateSharedLinkForm({
           </label>
 
           {selectedLink ? (
-            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white px-4 py-4 shadow-sm">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-base font-bold text-slate-900">
+            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white px-4 py-4 shadow-sm">
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="break-words text-base font-bold text-slate-900">
                     {selectedLink.label}
                   </p>
 
@@ -151,7 +151,7 @@ export default function DeactivateSharedLinkForm({
                   </p>
                 </div>
 
-                <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm">
+                <span className="inline-flex items-center self-start rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm sm:self-auto">
                   Acción reversible
                 </span>
               </div>
@@ -169,23 +169,23 @@ export default function DeactivateSharedLinkForm({
           </div>
 
           {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
               {error}
             </div>
           ) : null}
 
           {success ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
               {success}
             </div>
           ) : null}
 
-          <div className="flex justify-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleDeactivate}
               disabled={loading || !selectedLink}
-              className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {loading ? "Guardando..." : "Dejar de compartir"}
             </button>

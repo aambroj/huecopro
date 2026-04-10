@@ -190,7 +190,7 @@ function renderSummaryCard(params: {
 
   return (
     <article
-      className={`rounded-[2rem] border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
+      className={`min-w-0 overflow-hidden rounded-[2rem] border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
     >
       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         {title}
@@ -198,7 +198,7 @@ function renderSummaryCard(params: {
       <p className={`mt-2 text-4xl font-black leading-none ${valueClasses}`}>
         {value}
       </p>
-      <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>
     </article>
   );
 }
@@ -251,7 +251,9 @@ export default async function CompartirPage() {
   const activeLinks = ((activeLinksData as LinkRow[]) ?? []).filter(Boolean);
 
   const allKnownInvites = [...sentInvites, ...receivedInvites];
-  const inviteMap = new Map(allKnownInvites.map((invite) => [invite.id, invite]));
+  const inviteMap = new Map(
+    allKnownInvites.map((invite) => [invite.id, invite])
+  );
 
   function getLinkLabel(link: LinkRow) {
     if (!link.created_from_invite_id) {
@@ -276,12 +278,12 @@ export default async function CompartirPage() {
 
   return (
     <main className="min-h-screen bg-transparent px-4 py-6 text-slate-900 sm:px-6">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl min-w-0">
         <SharedInvitesRealtimeNotice userEmail={normalizedUserEmail} />
         <SharedReceivedInvitesAutoFocus userEmail={normalizedUserEmail} />
         <InternalTopbar />
 
-        <section className="rounded-[2rem] border border-white/70 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
+        <section className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Compartir
           </p>
@@ -290,7 +292,7 @@ export default async function CompartirPage() {
             Compartir agenda
           </h1>
 
-          <p className="mt-4 max-w-3xl text-base text-slate-600 sm:text-lg">
+          <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
             Conecta tu cuenta con otro profesional para veros mutuamente la
             agenda en solo lectura.
             <span className="font-semibold text-slate-800">
@@ -339,17 +341,17 @@ export default async function CompartirPage() {
           })}
         </section>
 
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <ShareAgendaInviteForm />
         </div>
 
-        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+        <section className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-2xl font-bold text-slate-900">
                 Conexiones activas
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-slate-600">
                 Estas conexiones ya están funcionando.
                 <span className="font-semibold text-slate-800">
                   {" "}
@@ -359,7 +361,7 @@ export default async function CompartirPage() {
               </p>
             </div>
 
-            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+            <span className="inline-flex items-center self-start rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 sm:self-auto">
               {activeLinks.length} conexión
               {activeLinks.length === 1 ? "" : "es"} activa
               {activeLinks.length === 1 ? "" : "s"}
@@ -375,12 +377,12 @@ export default async function CompartirPage() {
               {activeLinkOptions.map((link) => (
                 <article
                   key={link.id}
-                  className="rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                  className="min-w-0 overflow-hidden rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                 >
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
+                  <div className="flex min-w-0 flex-col gap-3">
+                    <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-bold text-slate-900">
+                        <p className="break-words text-lg font-bold text-slate-900">
                           {link.label}
                         </p>
                         <span className="inline-flex rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700">
@@ -388,7 +390,7 @@ export default async function CompartirPage() {
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                      <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                         {link.description}
                       </p>
                     </div>
@@ -399,20 +401,20 @@ export default async function CompartirPage() {
           )}
         </section>
 
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <DeactivateSharedLinkForm links={activeLinkOptions} />
         </div>
 
         <section
           id="invitaciones-recibidas"
-          className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl transition sm:p-6"
+          className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl transition sm:p-6"
         >
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-2xl font-bold text-slate-900">
                 Invitaciones recibidas
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-slate-600">
                 Si aceptas una invitación,
                 <span className="font-semibold text-slate-800">
                   {" "}
@@ -422,7 +424,7 @@ export default async function CompartirPage() {
               </p>
             </div>
 
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+            <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 sm:self-auto">
               {pendingReceivedInvites.length} pendiente
               {pendingReceivedInvites.length === 1 ? "" : "s"}
             </span>
@@ -440,12 +442,12 @@ export default async function CompartirPage() {
                 return (
                   <article
                     key={invite.id}
-                    className="rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                    className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                   >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
+                    <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-bold text-slate-900">
+                          <p className="break-words text-lg font-bold text-slate-900">
                             {receivedLabel}
                           </p>
                           <span
@@ -461,18 +463,18 @@ export default async function CompartirPage() {
                           primaryLabel: receivedLabel,
                           email: invite.inviter_email,
                         }) ? (
-                          <p className="mt-2 text-sm text-slate-600">
+                          <p className="mt-2 text-sm leading-6 text-slate-600">
                             Correo del profesional:{" "}
-                            <span className="font-semibold text-slate-800">
+                            <span className="break-all font-semibold text-slate-800">
                               {invite.inviter_email}
                             </span>
                             .
                           </p>
                         ) : null}
 
-                        <p className="mt-2 text-sm text-slate-600">
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
                           Esta invitación está asociada a tu correo{" "}
-                          <span className="font-semibold text-slate-800">
+                          <span className="break-all font-semibold text-slate-800">
                             {invite.invitee_email}
                           </span>
                           .
@@ -497,10 +499,12 @@ export default async function CompartirPage() {
                         </p>
                       </div>
 
-                      <SharedInviteActions
-                        inviteId={invite.id}
-                        variant="received"
-                      />
+                      <div className="min-w-0 w-full xl:w-auto">
+                        <SharedInviteActions
+                          inviteId={invite.id}
+                          variant="received"
+                        />
+                      </div>
                     </div>
                   </article>
                 );
@@ -509,13 +513,13 @@ export default async function CompartirPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+        <section className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-2xl font-bold text-slate-900">
                 Invitaciones enviadas
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-slate-600">
                 Cuando la otra persona acepte,
                 <span className="font-semibold text-slate-800">
                   {" "}
@@ -525,7 +529,7 @@ export default async function CompartirPage() {
               </p>
             </div>
 
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+            <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 sm:self-auto">
               {sentInvites.length} invitación
               {sentInvites.length === 1 ? "" : "es"}
             </span>
@@ -543,12 +547,12 @@ export default async function CompartirPage() {
                 return (
                   <article
                     key={invite.id}
-                    className="rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                    className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
                   >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
+                    <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-bold text-slate-900">
+                          <p className="break-words text-lg font-bold text-slate-900">
                             {sentLabel}
                           </p>
                           <span
@@ -564,9 +568,9 @@ export default async function CompartirPage() {
                           primaryLabel: sentLabel,
                           email: invite.invitee_email,
                         }) ? (
-                          <p className="mt-2 text-sm text-slate-600">
+                          <p className="mt-2 text-sm leading-6 text-slate-600">
                             Correo del profesional:{" "}
-                            <span className="font-semibold text-slate-800">
+                            <span className="break-all font-semibold text-slate-800">
                               {invite.invitee_email}
                             </span>
                             .
@@ -615,10 +619,12 @@ export default async function CompartirPage() {
                       </div>
 
                       {invite.status === "pending" ? (
-                        <SharedInviteActions
-                          inviteId={invite.id}
-                          variant="sent"
-                        />
+                        <div className="min-w-0 w-full xl:w-auto">
+                          <SharedInviteActions
+                            inviteId={invite.id}
+                            variant="sent"
+                          />
+                        </div>
                       ) : null}
                     </div>
                   </article>
@@ -631,7 +637,7 @@ export default async function CompartirPage() {
         <div className="mt-6">
           <Link
             href="/agenda"
-            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
           >
             Volver a la agenda
           </Link>

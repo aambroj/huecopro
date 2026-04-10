@@ -20,7 +20,7 @@ export default function SharedInviteActions({
   const [error, setError] = useState<string | null>(null);
 
   const inputClasses =
-    "rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
+    "w-full min-w-0 rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
 
   async function runAction(action: "accept" | "reject" | "cancel") {
     setLoadingAction(action);
@@ -58,32 +58,37 @@ export default function SharedInviteActions({
 
   if (variant === "sent") {
     return (
-      <div className="flex flex-col items-start gap-3">
-        <button
-          type="button"
-          onClick={() => runAction("cancel")}
-          disabled={loadingAction !== null}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loadingAction === "cancel" ? "Cancelando..." : "Cancelar invitación"}
-        </button>
+      <div className="min-w-0 w-full xl:w-auto">
+        <div className="flex min-w-0 flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => runAction("cancel")}
+            disabled={loadingAction !== null}
+            className="inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 xl:w-auto"
+          >
+            {loadingAction === "cancel"
+              ? "Cancelando..."
+              : "Cancelar invitación"}
+          </button>
 
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+              {error}
+            </div>
+          ) : null}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md">
-      <div className="grid gap-3">
-        <label className="grid gap-2">
+    <div className="min-w-0 w-full max-w-none xl:max-w-md">
+      <div className="grid min-w-0 gap-3">
+        <label className="grid min-w-0 gap-2">
           <span className="text-sm font-semibold text-slate-700">
             Cómo quieres identificar a este profesional (opcional)
           </span>
+
           <input
             type="text"
             value={aliasForInvitee}
@@ -103,12 +108,12 @@ export default function SharedInviteActions({
           . Tú verás su agenda y la otra persona verá la tuya.
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
             onClick={() => runAction("accept")}
             disabled={loadingAction !== null}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loadingAction === "accept"
               ? "Aceptando..."
@@ -119,14 +124,14 @@ export default function SharedInviteActions({
             type="button"
             onClick={() => runAction("reject")}
             disabled={loadingAction !== null}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loadingAction === "reject" ? "Rechazando..." : "Rechazar"}
           </button>
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
             {error}
           </div>
         ) : null}
