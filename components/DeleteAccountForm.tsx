@@ -54,9 +54,9 @@ export default function DeleteAccountForm() {
   }
 
   return (
-    <section className="rounded-[2rem] border border-red-200 bg-red-50/95 p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+    <section className="min-w-0 rounded-[2rem] border border-red-200 bg-red-50/95 p-4 shadow-sm sm:p-6">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
             Zona sensible
           </p>
@@ -77,18 +77,20 @@ export default function DeleteAccountForm() {
           </p>
         </div>
 
-        <span className="inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm">
+        <span className="inline-flex items-center self-start rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm">
           Irreversible
         </span>
       </div>
 
-      <div className="mt-5 rounded-[2rem] border border-red-200 bg-white/92 p-4 shadow-sm sm:p-5">
+      <div className="mt-5 min-w-0 rounded-[2rem] border border-red-200 bg-white/92 p-4 shadow-sm sm:p-5">
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          Para confirmar, escribe exactamente:
-          <span className="ml-2 font-bold">{CONFIRM_TEXT}</span>
+          <span>Para confirmar, escribe exactamente:</span>
+          <span className="mt-2 block font-bold sm:mt-0 sm:ml-2 sm:inline">
+            {CONFIRM_TEXT}
+          </span>
         </div>
 
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4 grid min-w-0 gap-2">
           <label
             htmlFor="delete-account-confirmation"
             className="text-sm font-semibold text-slate-700"
@@ -102,7 +104,7 @@ export default function DeleteAccountForm() {
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
             placeholder={CONFIRM_TEXT}
-            className="rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-red-400 focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full min-w-0 rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-red-400 focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-slate-100"
             disabled={loading}
           />
         </div>
@@ -113,14 +115,16 @@ export default function DeleteAccountForm() {
           </div>
         ) : null}
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex min-w-0 flex-wrap gap-3">
           <button
             type="button"
             onClick={handleDelete}
             disabled={!isConfirmationValid || loading}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-center text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            {loading ? "Eliminando cuenta..." : "Eliminar mi cuenta definitivamente"}
+            {loading
+              ? "Eliminando cuenta..."
+              : "Eliminar mi cuenta definitivamente"}
           </button>
         </div>
 

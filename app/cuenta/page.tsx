@@ -31,7 +31,7 @@ export default async function CuentaPage() {
       <div className="mx-auto max-w-6xl">
         <InternalTopbar />
 
-        <section className="rounded-[2rem] border border-white/70 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
+        <section className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Cuenta
           </p>
@@ -45,8 +45,8 @@ export default async function CuentaPage() {
             importantes de recuperación y baja de cuenta.
           </p>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
+          <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-2">
+            <div className="min-w-0 rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Email de acceso
               </p>
@@ -67,7 +67,7 @@ export default async function CuentaPage() {
               ) : null}
             </div>
 
-            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
+            <div className="min-w-0 rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Estado actual
               </p>
@@ -89,7 +89,7 @@ export default async function CuentaPage() {
             </div>
           </div>
 
-          <section className="mt-8 rounded-[2rem] border border-sky-200 bg-sky-50/95 p-5 shadow-sm sm:p-6">
+          <section className="mt-8 min-w-0 rounded-[2rem] border border-sky-200 bg-sky-50/95 p-5 shadow-sm sm:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
               Acceso y recuperación
             </p>
@@ -121,7 +121,7 @@ export default async function CuentaPage() {
             </div>
           </section>
 
-          <section className="mt-8 rounded-[2rem] border border-amber-200 bg-amber-50/95 p-5 shadow-sm sm:p-6">
+          <section className="mt-8 min-w-0 rounded-[2rem] border border-amber-200 bg-amber-50/95 p-5 shadow-sm sm:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-800">
               Aviso importante
             </p>
@@ -142,14 +142,14 @@ export default async function CuentaPage() {
             </p>
           </section>
 
-          <div className="mt-8">
+          <div className="mt-8 min-w-0">
             <DeleteAccountForm />
           </div>
 
           <div className="mt-6">
             <Link
               href="/agenda"
-              className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
             >
               Volver a la agenda
             </Link>
