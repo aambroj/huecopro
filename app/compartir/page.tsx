@@ -1,19 +1,10 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import InternalTopbar from "@/components/InternalTopbar";
-import ShareAgendaInviteForm from "@/components/ShareAgendaInviteForm";
-import SharedInviteActions from "@/components/SharedInviteActions";
-import DeactivateSharedLinkForm from "@/components/DeactivateSharedLinkForm";
-import SharedInvitesRealtimeNotice from "@/components/SharedInvitesRealtimeNotice";
-import SharedReceivedInvitesAutoFocus from "@/components/SharedReceivedInvitesAutoFocus";
 import { getSupabaseServer } from "@/lib/supabase-server";
-
-export const metadata: Metadata = {
-  title: "Compartir agenda | AutonomoAgenda",
-  description:
-    "Invita a otro profesional, comparte visibilidad de agenda en solo lectura y deja de compartir cuando quieras en AutonomoAgenda.",
-};
+import EditSharedLinkAliasForm from "@/components/EditSharedLinkAliasForm";
+import DeactivateSharedLinkForm, {
+  type ActiveLinkOption,
+} from "@/components/DeactivateSharedLinkForm";
 
 export const dynamic = "force-dynamic";
 
@@ -24,183 +15,69 @@ type InviteRow = {
   invitee_email: string;
   invitee_user_id: string | null;
   status: string;
-  created_at: string;
-  responded_at: string | null;
-  accepted_at: string | null;
-  cancelled_at: string | null;
   alias_for_inviter: string | null;
   alias_for_invitee: string | null;
+  created_at: string | null;
 };
 
 type LinkRow = {
   id: string;
   user_a_id: string;
   user_b_id: string;
-  created_from_invite_id: string | null;
   is_active: boolean;
-  created_at: string;
-  deactivated_at: string | null;
+  created_at?: string | null;
 };
 
-const MADRID_LOCALE = "es-ES";
-const MADRID_TIME_ZONE = "Europe/Madrid";
+type ProfileRow = {
+  id: string;
+  full_name: string | null;
+};
 
-function normalizeText(value: string | null | undefined) {
-  return (value ?? "").trim().toLowerCase();
+type ActiveLinkCard = {
+  id: string;
+  inviteId: string | null;
+  title: string;
+  partnerEmail: string | null;
+  createdAt: string | null;
+  aliasPlaceholder: string;
+};
+
+function normalizeEmail(value: string | null | undefined) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
-function formatDateTime(value: string | null | undefined) {
-  if (!value) return "Sin fecha";
+function formatDate(value: string | null | undefined) {
+  if (!value) return "Fecha no disponible";
 
   const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Fecha no disponible";
 
-  if (Number.isNaN(date.getTime())) {
-    return "Sin fecha";
-  }
-
-  const dateLabel = date.toLocaleDateString(MADRID_LOCALE, {
-    timeZone: MADRID_TIME_ZONE,
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const timeLabel = date.toLocaleTimeString(MADRID_LOCALE, {
-    timeZone: MADRID_TIME_ZONE,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  });
-
-  return `${dateLabel} · ${timeLabel}`;
+  return new Intl.DateTimeFormat("es-ES", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/Madrid",
+  }).format(date);
 }
 
-function getInviteStatusLabel(status: string) {
-  const normalized = status.trim().toLowerCase();
-
-  if (normalized === "pending") return "Pendiente";
-  if (normalized === "accepted") return "Aceptada";
-  if (normalized === "rejected") return "Rechazada";
-  if (normalized === "cancelled") return "Cancelada";
-
-  return status;
+function getDisplayNameFromProfile(profile: ProfileRow | null | undefined) {
+  const name = profile?.full_name?.trim();
+  return name || null;
 }
 
-function getInviteStatusClasses(status: string) {
-  const normalized = status.trim().toLowerCase();
-
-  if (normalized === "pending") {
-    return "border-amber-200 bg-amber-50 text-amber-800";
-  }
-
-  if (normalized === "accepted") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (normalized === "rejected") {
-    return "border-slate-300 bg-slate-100 text-slate-700";
-  }
-
-  if (normalized === "cancelled") {
-    return "border-red-200 bg-red-50 text-red-700";
-  }
-
-  return "border-slate-200 bg-slate-50 text-slate-700";
+function getPendingIncomingLabel(invite: InviteRow) {
+  return invite.alias_for_invitee?.trim()
+    ? invite.alias_for_invitee.trim()
+    : invite.inviter_email?.trim()
+      ? invite.inviter_email.trim()
+      : "Profesional pendiente";
 }
 
-function getSentInviteLabel(invite: InviteRow) {
-  return invite.alias_for_inviter?.trim() || invite.invitee_email;
-}
-
-function getReceivedInviteLabel(invite: InviteRow) {
-  return (
-    invite.alias_for_invitee?.trim() ||
-    invite.inviter_email ||
-    "Otro profesional"
-  );
-}
-
-function shouldShowSecondaryEmailLine(params: {
-  primaryLabel: string;
-  email: string | null | undefined;
-}) {
-  const { primaryLabel, email } = params;
-  const normalizedPrimary = normalizeText(primaryLabel);
-  const normalizedEmail = normalizeText(email);
-
-  return Boolean(
-    normalizedPrimary &&
-      normalizedEmail &&
-      normalizedPrimary !== normalizedEmail
-  );
-}
-
-function getBestLinkLabel(params: {
-  invite: InviteRow | null;
-  normalizedUserEmail: string;
-}) {
-  const { invite, normalizedUserEmail } = params;
-
-  if (!invite) {
-    return "Otro profesional conectado";
-  }
-
-  const inviterEmail = normalizeText(invite.inviter_email);
-  const inviteeEmail = normalizeText(invite.invitee_email);
-  const aliasForInviter = (invite.alias_for_inviter ?? "").trim();
-  const aliasForInvitee = (invite.alias_for_invitee ?? "").trim();
-
-  const currentUserIsInvitee =
-    inviteeEmail && inviteeEmail === normalizedUserEmail;
-
-  const currentUserIsInviter =
-    inviterEmail && inviterEmail === normalizedUserEmail;
-
-  if (currentUserIsInvitee) {
-    if (aliasForInvitee) return aliasForInvitee;
-    if (invite.inviter_email) return invite.inviter_email;
-  }
-
-  if (currentUserIsInviter) {
-    if (aliasForInviter) return aliasForInviter;
-    if (invite.invitee_email) return invite.invitee_email;
-  }
-
-  if (inviteeEmail && inviteeEmail !== normalizedUserEmail) {
-    if (aliasForInviter) return aliasForInviter;
-    return invite.invitee_email;
-  }
-
-  if (inviterEmail && inviterEmail !== normalizedUserEmail) {
-    if (aliasForInvitee) return aliasForInvitee;
-    return invite.inviter_email ?? "Otro profesional conectado";
-  }
-
-  return "Otro profesional conectado";
-}
-
-function renderSummaryCard(params: {
-  title: string;
-  value: number;
-  subtitle: string;
-  valueClasses: string;
-  cardClasses: string;
-}) {
-  const { title, value, subtitle, valueClasses, cardClasses } = params;
-
-  return (
-    <article
-      className={`min-w-0 overflow-hidden rounded-[2rem] border p-5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] backdrop-blur-sm ${cardClasses}`}
-    >
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-        {title}
-      </p>
-      <p className={`mt-2 text-4xl font-black leading-none ${valueClasses}`}>
-        {value}
-      </p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>
-    </article>
-  );
+function getPendingOutgoingLabel(invite: InviteRow) {
+  return invite.alias_for_inviter?.trim()
+    ? invite.alias_for_inviter.trim()
+    : invite.invitee_email?.trim()
+      ? invite.invitee_email.trim()
+      : "Profesional invitado";
 }
 
 export default async function CompartirPage() {
@@ -208,439 +85,351 @@ export default async function CompartirPage() {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
+  if (userError || !user) {
+    redirect("/login?redirectTo=/compartir");
   }
 
-  const normalizedUserEmail = normalizeText(user.email);
+  const currentUserId = user.id;
+  const currentUserEmail = normalizeEmail(user.email);
 
-  const { data: sentInvitesData } = await supabase
-    .from("shared_agenda_invites")
-    .select("*")
-    .eq("inviter_user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [{ data: invitesData }, { data: linksData }, { data: profilesData }] =
+    await Promise.all([
+      supabase
+        .from("shared_agenda_invites")
+        .select(
+          "id, inviter_user_id, inviter_email, invitee_email, invitee_user_id, status, alias_for_inviter, alias_for_invitee, created_at"
+        )
+        .or(
+          `inviter_user_id.eq.${currentUserId},invitee_user_id.eq.${currentUserId},invitee_email.eq.${currentUserEmail}`
+        )
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("shared_agenda_links")
+        .select("id, user_a_id, user_b_id, is_active, created_at")
+        .or(`user_a_id.eq.${currentUserId},user_b_id.eq.${currentUserId}`)
+        .order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, full_name"),
+    ]);
 
-  const { data: receivedInvitesData } = await supabase
-    .from("shared_agenda_invites")
-    .select("*")
-    .eq("invitee_email", normalizedUserEmail)
-    .order("created_at", { ascending: false });
+  const invites = ((invitesData as InviteRow[] | null) ?? []).filter(Boolean);
+  const links = ((linksData as LinkRow[] | null) ?? []).filter(Boolean);
+  const profiles = ((profilesData as ProfileRow[] | null) ?? []).filter(Boolean);
 
-  const { data: activeLinksData } = await supabase
-    .from("shared_agenda_links")
-    .select("*")
-    .eq("is_active", true)
-    .or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`)
-    .order("created_at", { ascending: false });
+  const profileMap = new Map<string, ProfileRow>();
+  for (const profile of profiles) {
+    profileMap.set(profile.id, profile);
+  }
 
-  const sentInvites = ((sentInvitesData as InviteRow[]) ?? []).filter(Boolean);
-  const receivedInvites = ((receivedInvitesData as InviteRow[]) ?? [])
-    .filter(Boolean)
-    .filter((invite) => invite.inviter_user_id !== user.id);
+  const incomingPendingInvites = invites.filter((invite) => {
+    const isPending = invite.status === "pending";
+    const belongsToCurrentUser =
+      invite.invitee_user_id === currentUserId ||
+      normalizeEmail(invite.invitee_email) === currentUserEmail;
 
-  const pendingReceivedInvites = receivedInvites.filter(
-    (invite) => invite.status === "pending"
-  );
+    return isPending && belongsToCurrentUser && invite.inviter_user_id !== currentUserId;
+  });
 
-  const pendingSentInvites = sentInvites.filter(
-    (invite) => invite.status === "pending"
-  );
+  const outgoingPendingInvites = invites.filter((invite) => {
+    return invite.status === "pending" && invite.inviter_user_id === currentUserId;
+  });
 
-  const activeLinks = ((activeLinksData as LinkRow[]) ?? []).filter(Boolean);
+  const activeLinks = links.filter((link) => link.is_active);
 
-  const allKnownInvites = [...sentInvites, ...receivedInvites];
-  const inviteMap = new Map(
-    allKnownInvites.map((invite) => [invite.id, invite])
-  );
+  const activeLinkCards: ActiveLinkCard[] = activeLinks.map((link) => {
+    const partnerUserId =
+      link.user_a_id === currentUserId ? link.user_b_id : link.user_a_id;
+    const partnerProfile = profileMap.get(partnerUserId);
 
-  function getLinkLabel(link: LinkRow) {
-    if (!link.created_from_invite_id) {
-      return "Otro profesional conectado";
-    }
+    const matchingInvite = invites.find((invite) => {
+      const samePair =
+        (invite.inviter_user_id === currentUserId &&
+          invite.invitee_user_id === partnerUserId) ||
+        (invite.inviter_user_id === partnerUserId &&
+          invite.invitee_user_id === currentUserId);
 
-    const invite = inviteMap.get(link.created_from_invite_id) ?? null;
-
-    return getBestLinkLabel({
-      invite,
-      normalizedUserEmail,
+      return samePair && invite.status === "accepted";
     });
-  }
 
-  const activeLinkOptions = activeLinks.map((link) => ({
+    const aliasForCurrentUser =
+      matchingInvite?.inviter_user_id === currentUserId
+        ? matchingInvite.alias_for_inviter
+        : matchingInvite?.alias_for_invitee;
+
+    const partnerEmail =
+      matchingInvite?.inviter_user_id === currentUserId
+        ? matchingInvite.invitee_email
+        : matchingInvite?.inviter_email;
+
+    const fallbackName =
+      getDisplayNameFromProfile(partnerProfile) ||
+      partnerEmail?.trim() ||
+      "Profesional conectado";
+
+    const visibleName = aliasForCurrentUser?.trim() || fallbackName;
+
+    return {
+      id: String(link.id),
+      inviteId: matchingInvite?.id ?? null,
+      title: visibleName,
+      partnerEmail: partnerEmail?.trim() || null,
+      createdAt: link.created_at ?? null,
+      aliasPlaceholder: partnerEmail?.trim()
+        ? `Ejemplo: ${partnerEmail.trim()}`
+        : "Nombre para este compañero",
+    };
+  });
+
+  const activeLinkOptions: ActiveLinkOption[] = activeLinkCards.map((link) => ({
     id: link.id,
-    label: getLinkLabel(link),
-    description: `Conexión mutua en solo lectura. Ambos podéis ver la agenda del otro desde ${formatDateTime(
-      link.created_at
-    )}. La conexión seguirá activa aunque cerréis sesión y volváis otro día, hasta que uno de los dos deje de compartir.`,
+    label: link.title,
+    aliasPlaceholder: link.aliasPlaceholder,
   }));
 
+  const activeAliasOptions = activeLinkCards
+    .filter((link) => Boolean(link.inviteId))
+    .map((link) => ({
+      id: String(link.inviteId),
+      label: link.title,
+      placeholder: link.aliasPlaceholder,
+    }));
+
   return (
-    <main className="min-h-screen bg-transparent px-4 py-6 text-slate-900 sm:px-6">
-      <div className="mx-auto max-w-6xl min-w-0">
-        <SharedInvitesRealtimeNotice userEmail={normalizedUserEmail} />
-        <SharedReceivedInvitesAutoFocus userEmail={normalizedUserEmail} />
-        <InternalTopbar />
-
-        <section className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Compartir
-          </p>
-
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="max-w-3xl">
+          <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
             Compartir agenda
+          </span>
+
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Comparte tu agenda con otros profesionales
           </h1>
 
-          <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
-            Conecta tu cuenta con otro profesional para veros mutuamente la
-            agenda en solo lectura.
-            <span className="font-semibold text-slate-800">
-              {" "}
-              Cuando una invitación se acepta, ambas cuentas pueden ver la
-              agenda de la otra
-            </span>
-            . Nadie puede editar la agenda ajena y cualquiera de los dos puede
-            dejar de compartir cuando quiera.
+          <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+            Aquí puedes invitar a otro profesional para que vea tu agenda y tú la
+            suya en modo solo lectura. La conexión se puede desactivar cuando quieras.
           </p>
-
-          <p className="mt-4 max-w-3xl rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
-            La conexión compartida
-            <span className="font-semibold"> no se pierde por cerrar sesión</span>.
-            Seguirá activa aunque volváis al día siguiente, hasta que uno de los
-            dos pulse <span className="font-semibold">“Dejar de compartir”</span>.
-          </p>
-        </section>
-
-        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {renderSummaryCard({
-            title: "Conexiones activas",
-            value: activeLinks.length,
-            subtitle:
-              "Profesionales con los que ya tienes visibilidad mutua en solo lectura.",
-            valueClasses: "text-emerald-700",
-            cardClasses: "border-emerald-200 bg-white/88",
-          })}
-
-          {renderSummaryCard({
-            title: "Pendientes recibidas",
-            value: pendingReceivedInvites.length,
-            subtitle:
-              "Invitaciones que puedes aceptar o rechazar ahora mismo.",
-            valueClasses: "text-amber-700",
-            cardClasses: "border-amber-200 bg-white/88",
-          })}
-
-          {renderSummaryCard({
-            title: "Pendientes enviadas",
-            value: pendingSentInvites.length,
-            subtitle:
-              "Invitaciones que aún dependen de la respuesta del otro profesional.",
-            valueClasses: "text-sky-700",
-            cardClasses: "border-sky-200 bg-white/88",
-          })}
-        </section>
-
-        <div className="mt-6 min-w-0">
-          <ShareAgendaInviteForm />
         </div>
 
-        <section className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold text-slate-900">
-                Conexiones activas
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Estas conexiones ya están funcionando.
-                <span className="font-semibold text-slate-800">
-                  {" "}
-                  Ambos podéis ver la agenda del otro en solo lectura
-                </span>{" "}
-                y seguirán activas hasta que uno de los dos deje de compartir.
-              </p>
-            </div>
-
-            <span className="inline-flex items-center self-start rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 sm:self-auto">
-              {activeLinks.length} conexión
-              {activeLinks.length === 1 ? "" : "es"} activa
-              {activeLinks.length === 1 ? "" : "s"}
-            </span>
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Conexiones activas
+            </p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">
+              {activeLinks.length}
+            </p>
           </div>
 
-          {activeLinkOptions.length === 0 ? (
-            <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-base font-semibold text-slate-600">
-              Todavía no tienes conexiones activas.
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3">
-              {activeLinkOptions.map((link) => (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Invitaciones recibidas
+            </p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">
+              {incomingPendingInvites.length}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Invitaciones enviadas
+            </p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">
+              {outgoingPendingInvites.length}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Conexiones activas
+            </h2>
+            <p className="text-sm text-slate-600">
+              Estas son las agendas que ahora mismo tienes conectadas.
+            </p>
+          </div>
+
+          {activeLinkCards.length ? (
+            <div className="mt-5 space-y-4">
+              {activeLinkCards.map((link) => (
                 <article
                   key={link.id}
-                  className="min-w-0 overflow-hidden rounded-[2rem] border border-emerald-200 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <div className="flex min-w-0 flex-col gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="break-words text-lg font-bold text-slate-900">
-                          {link.label}
-                        </p>
-                        <span className="inline-flex rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700">
-                          Activa
-                        </span>
-                      </div>
+                      <h3 className="text-base font-semibold text-slate-900">
+                        {link.title}
+                      </h3>
 
-                      <p className="mt-2 break-words text-sm leading-6 text-slate-600">
-                        {link.description}
+                      {link.partnerEmail ? (
+                        <p className="mt-1 break-all text-sm text-slate-600">
+                          {link.partnerEmail}
+                        </p>
+                      ) : null}
+
+                      <p className="mt-2 text-xs text-slate-500">
+                        Conectado desde {formatDate(link.createdAt)}
                       </p>
                     </div>
+
+                    <Link
+                      href="/agenda"
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                    >
+                      Ver agenda
+                    </Link>
                   </div>
                 </article>
               ))}
             </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+              <p className="text-sm text-slate-600">
+                Todavía no tienes ninguna conexión activa.
+              </p>
+            </div>
           )}
+
+          <div className="mt-6 min-w-0">
+            <EditSharedLinkAliasForm links={activeAliasOptions} />
+          </div>
+
+          <div className="mt-6 min-w-0">
+            <DeactivateSharedLinkForm links={activeLinkOptions} />
+          </div>
         </section>
 
-        <div className="mt-6 min-w-0">
-          <DeactivateSharedLinkForm links={activeLinkOptions} />
-        </div>
-
-        <section
-          id="invitaciones-recibidas"
-          className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl transition sm:p-6"
-        >
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold text-slate-900">
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-slate-900">
                 Invitaciones recibidas
               </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Si aceptas una invitación,
-                <span className="font-semibold text-slate-800">
-                  {" "}
-                  tú verás la agenda del otro profesional y él verá la tuya
-                </span>
-                , siempre en solo lectura.
+              <p className="text-sm text-slate-600">
+                Si aceptas, ambos podréis ver la agenda del otro en modo lectura.
               </p>
             </div>
 
-            <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 sm:self-auto">
-              {pendingReceivedInvites.length} pendiente
-              {pendingReceivedInvites.length === 1 ? "" : "s"}
-            </span>
-          </div>
-
-          {pendingReceivedInvites.length === 0 ? (
-            <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-base font-semibold text-slate-600">
-              No tienes invitaciones pendientes.
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3">
-              {pendingReceivedInvites.map((invite) => {
-                const receivedLabel = getReceivedInviteLabel(invite);
-
-                return (
+            {incomingPendingInvites.length ? (
+              <div className="mt-5 space-y-4">
+                {incomingPendingInvites.map((invite) => (
                   <article
                     key={invite.id}
-                    className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="break-words text-lg font-bold text-slate-900">
-                            {receivedLabel}
-                          </p>
-                          <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
-                              invite.status
-                            )}`}
-                          >
-                            {getInviteStatusLabel(invite.status)}
-                          </span>
-                        </div>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {getPendingIncomingLabel(invite)}
+                    </h3>
 
-                        {shouldShowSecondaryEmailLine({
-                          primaryLabel: receivedLabel,
-                          email: invite.inviter_email,
-                        }) ? (
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
-                            Correo del profesional:{" "}
-                            <span className="break-all font-semibold text-slate-800">
-                              {invite.inviter_email}
-                            </span>
-                            .
-                          </p>
-                        ) : null}
+                    {invite.inviter_email ? (
+                      <p className="mt-1 break-all text-sm text-slate-600">
+                        {invite.inviter_email}
+                      </p>
+                    ) : null}
 
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          Esta invitación está asociada a tu correo{" "}
-                          <span className="break-all font-semibold text-slate-800">
-                            {invite.invitee_email}
-                          </span>
-                          .
-                        </p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Recibida el {formatDate(invite.created_at)}
+                    </p>
 
-                        <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm leading-6 text-sky-800">
-                          Si aceptas, la visibilidad será mutua:
-                          <span className="font-semibold">
-                            {" "}
-                            ambos veréis la agenda del otro en solo lectura
-                          </span>
-                          .
-                        </p>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <form
+                        action={`/api/compartir/invitaciones/${invite.id}`}
+                        method="post"
+                      >
+                        <input type="hidden" name="action" value="accept" />
+                        <button
+                          type="submit"
+                          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        >
+                          Aceptar
+                        </button>
+                      </form>
 
-                        <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm leading-6 text-amber-900">
-                          Después seguirá compartida aunque cerréis sesión, hasta
-                          que uno de los dos deje de compartir.
-                        </p>
-
-                        <p className="mt-2 text-sm text-slate-500">
-                          Creada el {formatDateTime(invite.created_at)}.
-                        </p>
-                      </div>
-
-                      <div className="min-w-0 w-full xl:w-auto">
-                        <SharedInviteActions
-                          inviteId={invite.id}
-                          variant="received"
-                        />
-                      </div>
+                      <form
+                        action={`/api/compartir/invitaciones/${invite.id}`}
+                        method="post"
+                      >
+                        <input type="hidden" name="action" value="reject" />
+                        <button
+                          type="submit"
+                          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                        >
+                          Rechazar
+                        </button>
+                      </form>
                     </div>
                   </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+                <p className="text-sm text-slate-600">
+                  No tienes invitaciones pendientes de aceptar.
+                </p>
+              </div>
+            )}
+          </section>
 
-        <section className="mt-6 min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold text-slate-900">
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-slate-900">
                 Invitaciones enviadas
               </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Cuando la otra persona acepte,
-                <span className="font-semibold text-slate-800">
-                  {" "}
-                  ambos podréis ver la agenda del otro
-                </span>{" "}
-                en solo lectura.
+              <p className="text-sm text-slate-600">
+                Estas son las invitaciones que todavía están esperando respuesta.
               </p>
             </div>
 
-            <span className="inline-flex items-center self-start rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 sm:self-auto">
-              {sentInvites.length} invitación
-              {sentInvites.length === 1 ? "" : "es"}
-            </span>
-          </div>
-
-          {sentInvites.length === 0 ? (
-            <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-base font-semibold text-slate-600">
-              Todavía no has enviado invitaciones.
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3">
-              {sentInvites.map((invite) => {
-                const sentLabel = getSentInviteLabel(invite);
-
-                return (
+            {outgoingPendingInvites.length ? (
+              <div className="mt-5 space-y-4">
+                {outgoingPendingInvites.map((invite) => (
                   <article
                     key={invite.id}
-                    className="min-w-0 overflow-hidden rounded-[2rem] border border-white/70 bg-white/88 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="break-words text-lg font-bold text-slate-900">
-                            {sentLabel}
-                          </p>
-                          <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${getInviteStatusClasses(
-                              invite.status
-                            )}`}
-                          >
-                            {getInviteStatusLabel(invite.status)}
-                          </span>
-                        </div>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {getPendingOutgoingLabel(invite)}
+                    </h3>
 
-                        {shouldShowSecondaryEmailLine({
-                          primaryLabel: sentLabel,
-                          email: invite.invitee_email,
-                        }) ? (
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
-                            Correo del profesional:{" "}
-                            <span className="break-all font-semibold text-slate-800">
-                              {invite.invitee_email}
-                            </span>
-                            .
-                          </p>
-                        ) : null}
+                    <p className="mt-1 break-all text-sm text-slate-600">
+                      {invite.invitee_email}
+                    </p>
 
-                        <p className="mt-2 text-sm text-slate-500">
-                          Creada el {formatDateTime(invite.created_at)}.
-                        </p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Enviada el {formatDate(invite.created_at)}
+                    </p>
 
-                        {invite.status === "pending" ? (
-                          <p className="mt-2 rounded-2xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm leading-6 text-sky-800">
-                            Si la acepta, la conexión será mutua y
-                            <span className="font-semibold">
-                              {" "}
-                              ambos veréis la agenda del otro
-                            </span>
-                            .
-                          </p>
-                        ) : null}
-
-                        {invite.status === "pending" ? (
-                          <p className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm leading-6 text-amber-900">
-                            Después la conexión seguirá activa aunque cerréis
-                            sesión, hasta que uno de los dos deje de compartir.
-                          </p>
-                        ) : null}
-
-                        {invite.accepted_at ? (
-                          <p className="mt-2 text-sm text-emerald-700">
-                            Aceptada el {formatDateTime(invite.accepted_at)}.
-                          </p>
-                        ) : null}
-
-                        {invite.responded_at && invite.status === "rejected" ? (
-                          <p className="mt-2 text-sm text-slate-600">
-                            Rechazada el {formatDateTime(invite.responded_at)}.
-                          </p>
-                        ) : null}
-
-                        {invite.cancelled_at ? (
-                          <p className="mt-2 text-sm text-red-700">
-                            Cancelada el {formatDateTime(invite.cancelled_at)}.
-                          </p>
-                        ) : null}
-                      </div>
-
-                      {invite.status === "pending" ? (
-                        <div className="min-w-0 w-full xl:w-auto">
-                          <SharedInviteActions
-                            inviteId={invite.id}
-                            variant="sent"
-                          />
-                        </div>
-                      ) : null}
-                    </div>
+                    <form
+                      action={`/api/compartir/invitaciones/${invite.id}`}
+                      method="post"
+                      className="mt-4"
+                    >
+                      <input type="hidden" name="action" value="cancel" />
+                      <button
+                        type="submit"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                      >
+                        Cancelar invitación
+                      </button>
+                    </form>
                   </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        <div className="mt-6">
-          <Link
-            href="/agenda"
-            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
-          >
-            Volver a la agenda
-          </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+                <p className="text-sm text-slate-600">
+                  No tienes invitaciones enviadas pendientes.
+                </p>
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </main>

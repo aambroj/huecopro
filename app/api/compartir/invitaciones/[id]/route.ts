@@ -8,7 +8,8 @@ type RouteContext = {
 };
 
 type PatchInviteBody = {
-  action?: "accept" | "reject" | "cancel";
+  action?: "accept" | "reject" | "cancel" | "update_alias";
+  alias?: string;
   alias_for_invitee?: string;
 };
 
@@ -68,7 +69,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    if (!action || !["accept", "reject", "cancel"].includes(action)) {
+    if (
+      !action ||
+      !["accept", "reject", "cancel", "update_alias"].includes(action)
+    ) {
       return NextResponse.json(
         { error: "Acción no válida." },
         { status: 400 }
@@ -102,6 +106,48 @@ export async function PATCH(request: Request, context: RouteContext) {
     const currentUserIsInvitee =
       typedInvite.invitee_user_id === user.id ||
       normalizeEmail(typedInvite.invitee_email) === currentUserEmail;
+
+    if (action === "update_alias") {
+      if (!currentUserIsInviter && !currentUserIsInvitee) {
+        return NextResponse.json(
+          { error: "No puedes cambiar el nombre de esta invitación." },
+          { status: 403 }
+        );
+      }
+
+      if (typedInvite.status === "cancelled") {
+        return NextResponse.json(
+          { error: "No se puede cambiar el nombre de una invitación cancelada." },
+          { status: 409 }
+        );
+      }
+
+      const normalizedAlias = normalizeAlias(body.alias);
+
+      const updatePayload = currentUserIsInviter
+        ? { alias_for_inviter: normalizedAlias }
+        : { alias_for_invitee: normalizedAlias };
+
+      const { error: updateAliasError } = await supabase
+        .from("shared_agenda_invites")
+        .update(updatePayload)
+        .eq("id", typedInvite.id);
+
+      if (updateAliasError) {
+        return NextResponse.json(
+          {
+            error:
+              updateAliasError.message || "No se pudo guardar el nombre.",
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        ok: true,
+        saved_alias: normalizedAlias,
+      });
+    }
 
     if (action === "cancel") {
       if (!currentUserIsInviter) {
@@ -186,7 +232,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const aliasForInvitee = normalizeAlias(body.alias_for_invitee);
+    const aliasForInvitee = normalizeAlias(
+      body.alias_for_invitee ?? body.alias
+    );
 
     const { data: existingLink, error: existingLinkError } = await supabase
       .from("shared_agenda_links")
