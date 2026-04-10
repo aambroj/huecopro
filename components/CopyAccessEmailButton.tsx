@@ -31,17 +31,17 @@ export default function CopyAccessEmailButton({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <button
         type="button"
         onClick={handleCopy}
-        className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+        className="inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
       >
         {copied ? "Email copiado" : "Copiar email"}
       </button>
 
       {error ? (
-        <span className="text-sm font-medium text-red-700">
+        <span className="min-w-0 text-sm font-medium text-red-700">
           No se pudo copiar automáticamente.
         </span>
       ) : null}
