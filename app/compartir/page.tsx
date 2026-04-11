@@ -36,6 +36,7 @@ type ProfileRow = {
 type ActiveLinkCard = {
   id: string;
   inviteId: string | null;
+  partnerUserId: string;
   title: string;
   partnerEmail: string | null;
   createdAt: string | null;
@@ -141,6 +142,7 @@ export default async function CompartirPage() {
   const activeLinkCards: ActiveLinkCard[] = activeLinks.map((link) => {
     const partnerUserId =
       link.user_a_id === currentUserId ? link.user_b_id : link.user_a_id;
+
     const partnerProfile = profileMap.get(partnerUserId);
 
     const matchingInvite = invites.find((invite) => {
@@ -173,6 +175,7 @@ export default async function CompartirPage() {
     return {
       id: String(link.id),
       inviteId: matchingInvite?.id ?? null,
+      partnerUserId,
       title: visibleName,
       partnerEmail: partnerEmail?.trim() || null,
       createdAt: link.created_at ?? null,
@@ -280,10 +283,10 @@ export default async function CompartirPage() {
                     </div>
 
                     <Link
-                      href="/agenda"
+                      href={`/agenda?shared=${encodeURIComponent(link.partnerUserId)}#agenda-compartida`}
                       className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
                     >
-                      Ver agenda
+                      Ver esta agenda
                     </Link>
                   </div>
                 </article>

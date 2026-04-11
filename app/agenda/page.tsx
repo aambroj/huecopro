@@ -3224,7 +3224,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               </div>
             ) : null}
 
-            <section className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+             <section id="agenda-compartida" className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6"
+             >
+              
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
