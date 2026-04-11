@@ -2136,7 +2136,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     ),
   ];
 
-  const selectedSharedUserId = requestedShared || sharedOwners[0]?.userId || "";
+  const selectedSharedUserId = sharedOwners.some(
+    (owner) => owner.userId === requestedShared
+  )
+    ? requestedShared
+    : "";
 
   const ownerIds = uniqueOwners.map((owner) => owner.userId);
 
@@ -2224,10 +2228,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       }),
     }));
 
-  const selectedSharedAgenda =
-    sharedAgendaData.find(
-      (item) => item.owner.userId === selectedSharedUserId
-    ) ?? sharedAgendaData[0] ?? null;
+  const selectedSharedAgenda = selectedSharedUserId
+    ? sharedAgendaData.find(
+        (item) => item.owner.userId === selectedSharedUserId
+      ) ?? null
+    : null;
 
   const ownAgendaHref = buildOwnAgendaHref({
     q: query,
@@ -3303,9 +3308,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                     Elige qué agenda compartida quieres ver
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
-                    Aquí siempre estás entrando en una agenda ajena en solo
-                    lectura. Solo se muestra una cada vez para que la pantalla
-                    quede más limpia.
+                    Puedes abrir una agenda ajena en solo lectura o salir de la
+                    vista compartida cuando quieras. Solo se muestra una cada vez
+                    para que la pantalla quede más limpia.
                   </p>
 
                   {selectedSharedAgenda ? (
@@ -3317,7 +3322,13 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                         Solo lectura
                       </span>
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                        Mostrando solo mi agenda
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <SharedAgendaSelector

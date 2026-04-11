@@ -33,7 +33,7 @@ export default function SharedAgendaSelector({
     return options.find((option) => option.userId === selectedUserId) ?? null;
   }, [options, selectedUserId]);
 
-  const currentLabel = selectedOption?.label ?? "Agenda compartida";
+  const currentLabel = selectedOption?.label ?? "Mi agenda";
 
   function handleChange(nextUserId: string) {
     if (nextUserId === selectedUserId) {
@@ -100,9 +100,9 @@ export default function SharedAgendaSelector({
           </h2>
 
           <p className="mt-1.5 text-sm leading-6 text-slate-600 sm:text-base">
-            Puedes elegir qué agenda compartida quieres ver. La agenda ajena es
-            solo lectura y se mantiene la semana y los filtros que ya tengas
-            aplicados.
+            Puedes elegir qué agenda compartida quieres ver o salir de esa vista.
+            La agenda ajena es solo lectura y se mantiene la semana y los filtros
+            que ya tengas aplicados.
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2">
@@ -132,6 +132,7 @@ export default function SharedAgendaSelector({
             disabled={isPending}
             className="min-h-[52px] w-full rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
           >
+            <option value="">Mi agenda (salir de vista compartida)</option>
             {options.map((option) => (
               <option key={option.userId} value={option.userId}>
                 {option.label}

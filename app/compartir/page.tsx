@@ -41,6 +41,9 @@ type ActiveLinkCard = {
   partnerEmail: string | null;
   createdAt: string | null;
   aliasPlaceholder: string;
+  baseName: string;
+  isUsingCustomAlias: boolean;
+  agendaHref: string;
 };
 
 function normalizeEmail(value: string | null | undefined) {
@@ -170,7 +173,12 @@ export default async function CompartirPage() {
       partnerEmail?.trim() ||
       "Profesional conectado";
 
-    const visibleName = aliasForCurrentUser?.trim() || fallbackName;
+    const trimmedAlias = aliasForCurrentUser?.trim() || "";
+    const isUsingCustomAlias = Boolean(trimmedAlias);
+    const visibleName = trimmedAlias || fallbackName;
+    const agendaHref = `/agenda?shared=${encodeURIComponent(
+      partnerUserId
+    )}#agenda-compartida`;
 
     return {
       id: String(link.id),
@@ -182,6 +190,9 @@ export default async function CompartirPage() {
       aliasPlaceholder: partnerEmail?.trim()
         ? `Ejemplo: ${partnerEmail.trim()}`
         : "Nombre para este compañero",
+      baseName: fallbackName,
+      isUsingCustomAlias,
+      agendaHref,
     };
   });
 
@@ -265,29 +276,71 @@ export default async function CompartirPage() {
                   key={link.id}
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-base font-semibold text-slate-900">
-                        {link.title}
-                      </h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-base font-semibold text-slate-900">
+                            {link.title}
+                          </h3>
 
-                      {link.partnerEmail ? (
-                        <p className="mt-1 break-all text-sm text-slate-600">
-                          {link.partnerEmail}
+                          {link.isUsingCustomAlias ? (
+                            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
+                              Alias personalizado
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">
+                              Sin alias propio
+                            </span>
+                          )}
+                        </div>
+
+                        {link.partnerEmail ? (
+                          <p className="mt-1 break-all text-sm text-slate-600">
+                            {link.partnerEmail}
+                          </p>
+                        ) : null}
+
+                        <p className="mt-2 text-xs text-slate-500">
+                          Conectado desde {formatDate(link.createdAt)}
                         </p>
-                      ) : null}
+                      </div>
 
-                      <p className="mt-2 text-xs text-slate-500">
-                        Conectado desde {formatDate(link.createdAt)}
-                      </p>
+                      <Link
+                        href={link.agendaHref}
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                      >
+                        Ver esta agenda
+                      </Link>
                     </div>
 
-                    <Link
-                      href={`/agenda?shared=${encodeURIComponent(link.partnerUserId)}#agenda-compartida`}
-                      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-                    >
-                      Ver esta agenda
-                    </Link>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Nombre visible en agenda
+                        </p>
+                        <p className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+                          {link.title}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Es el nombre que verás en el selector y en la vista compartida.
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Nombre base del compañero
+                        </p>
+                        <p className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+                          {link.baseName}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          {link.isUsingCustomAlias
+                            ? "Tienes puesto un alias por encima de este nombre base."
+                            : "Ahora mismo se está usando este nombre base porque no has guardado un alias propio."}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}
