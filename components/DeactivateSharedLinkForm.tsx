@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type ActiveLinkOption = {
   id: string;
@@ -29,7 +29,9 @@ function getFriendlyErrorMessage(message: string) {
 export default function DeactivateSharedLinkForm({
   links,
 }: DeactivateSharedLinkFormProps) {
-  const [selectedLinkId, setSelectedLinkId] = useState<string>(links[0]?.id ?? "");
+  const [selectedLinkId, setSelectedLinkId] = useState<string>(
+    links[0]?.id ?? ""
+  );
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -37,6 +39,26 @@ export default function DeactivateSharedLinkForm({
   const selectedLink = useMemo(() => {
     return links.find((link) => link.id === selectedLinkId) ?? null;
   }, [links, selectedLinkId]);
+
+  useEffect(() => {
+    if (!links.length) {
+      setSelectedLinkId("");
+      return;
+    }
+
+    setSelectedLinkId((current) => {
+      if (current && links.some((link) => link.id === current)) {
+        return current;
+      }
+
+      return links[0]?.id ?? "";
+    });
+  }, [links]);
+
+  useEffect(() => {
+    setErrorMessage("");
+    setSuccessMessage("");
+  }, [selectedLinkId]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,7 +97,10 @@ export default function DeactivateSharedLinkForm({
       window.location.reload();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "No se pudo desactivar la conexión.";
+        error instanceof Error
+          ? error.message
+          : "No se pudo desactivar la conexión.";
+
       setErrorMessage(getFriendlyErrorMessage(message));
     } finally {
       setSubmitting(false);
@@ -85,7 +110,7 @@ export default function DeactivateSharedLinkForm({
   if (!links.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm leading-6 text-slate-600">
           Ahora mismo no tienes conexiones activas para desactivar.
         </p>
       </div>
@@ -101,9 +126,19 @@ export default function DeactivateSharedLinkForm({
         <h3 className="text-base font-semibold text-slate-900">
           Desactivar conexión
         </h3>
-        <p className="text-sm text-slate-600">
-          Puedes dejar de compartir en cualquier momento. Más adelante podrás volver
-          a conectar si lo necesitas.
+        <p className="text-sm leading-6 text-slate-600">
+          Puedes dejar de compartir en cualquier momento. Más adelante podrás
+          volver a conectar si lo necesitas.
+        </p>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+          Aviso
+        </p>
+        <p className="mt-1 text-sm leading-6 text-amber-900">
+          Al desactivar la conexión, dejaréis de ver la agenda del otro hasta
+          que volváis a conectar.
         </p>
       </div>
 
@@ -114,6 +149,7 @@ export default function DeactivateSharedLinkForm({
         >
           Conexión activa
         </label>
+
         <select
           id="deactivate-link"
           value={selectedLinkId}
@@ -128,13 +164,22 @@ export default function DeactivateSharedLinkForm({
             </option>
           ))}
         </select>
-
-        {selectedLink ? (
-          <p className="text-xs text-slate-500">
-            {selectedLink.aliasPlaceholder ?? "Esta conexión dejará de estar compartida."}
-          </p>
-        ) : null}
       </div>
+
+      {selectedLink ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Conexión seleccionada
+          </p>
+          <p className="mt-1 break-words text-base font-semibold text-slate-900">
+            {selectedLink.label}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {selectedLink.aliasPlaceholder ??
+              "Esta conexión dejará de estar compartida."}
+          </p>
+        </div>
+      ) : null}
 
       {errorMessage ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -152,7 +197,7 @@ export default function DeactivateSharedLinkForm({
         <button
           type="submit"
           disabled={submitting || !selectedLinkId}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {submitting ? "Desactivando..." : "Desactivar conexión"}
         </button>

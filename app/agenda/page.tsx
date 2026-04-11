@@ -92,6 +92,9 @@ type AgendaOwner = {
   label: string;
   isOwn: boolean;
   readOnly: boolean;
+  inviteId: string | null;
+  editAliasHref: string | null;
+  manageConnectionHref: string;
 };
 
 type AgendaDayData = {
@@ -1657,6 +1660,22 @@ function getSharedAgendaLabel(params: {
   };
 }
 
+function buildSharedConnectionLinks(inviteId: string | null) {
+  if (!inviteId) {
+    return {
+      editAliasHref: null,
+      manageConnectionHref: "/compartir",
+    };
+  }
+
+  return {
+    editAliasHref: `/compartir?editAlias=${encodeURIComponent(
+      inviteId
+    )}#edit-shared-link-alias-form`,
+    manageConnectionHref: "/compartir#edit-shared-link-alias-form",
+  };
+}
+
 function renderSharedAgendaSection(params: {
   owner: AgendaOwner;
   data: AgendaComputedData;
@@ -1669,63 +1688,49 @@ function renderSharedAgendaSection(params: {
 
   return (
     <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
-      <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4 sm:px-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-sky-700">
+              Agenda compartida
+            </span>
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700">
               Solo lectura
-            </p>
-            <p className="mt-2 text-lg font-bold text-slate-900 sm:text-xl">
-              Estás viendo la agenda de {owner.label}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-slate-600 sm:text-base">
-              Puedes consultarla completa, pero no editar trabajos, no cambiar
-              estados y no tocar la agenda ajena.
-            </p>
+            </span>
           </div>
 
-          <span className="inline-flex items-center self-start rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-700">
-            Agenda ajena
-          </span>
-        </div>
-
-        <div className="mt-4 rounded-3xl border border-sky-300 bg-white px-4 py-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
-            Profesional visible ahora
-          </p>
-          <p className="mt-2 break-words text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-            {owner.label}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Todo lo que ves debajo pertenece a esta agenda compartida.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-sm">
-            Agenda compartida
-          </p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h2 className="mt-3 break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Agenda de {owner.label}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
-            Vista en solo lectura de la agenda del profesional conectado.
+            Todo lo que ves debajo pertenece a esta agenda compartida. Aquí puedes
+            consultarla, pero no editarla.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 xl:flex">
+          {owner.editAliasHref ? (
+            <Link
+              href={owner.editAliasHref}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 xl:w-auto"
+            >
+              Editar alias
+            </Link>
+          ) : null}
+
+          <Link
+            href={owner.manageConnectionHref}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 xl:w-auto"
+          >
+            Gestionar conexión
+          </Link>
+
           <Link
             href={backToOwnAgendaHref}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 xl:w-auto"
           >
             Volver a mi agenda
           </Link>
-
-          <span className="inline-flex items-center self-start rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 sm:self-auto">
-            Solo lectura
-          </span>
         </div>
       </div>
 
@@ -2112,6 +2117,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       currentUserEmail: normalizedUserEmail,
     });
 
+    const connectionLinks = buildSharedConnectionLinks(invite?.id ?? null);
+
     return {
       userId: sharedInfo.userId,
       label:
@@ -2120,6 +2127,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
           : sharedInfo.label,
       isOwn: false,
       readOnly: true,
+      inviteId: invite?.id ?? null,
+      editAliasHref: connectionLinks.editAliasHref,
+      manageConnectionHref: connectionLinks.manageConnectionHref,
     };
   });
 
@@ -2129,6 +2139,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       label: "Mi agenda",
       isOwn: true,
       readOnly: false,
+      inviteId: null,
+      editAliasHref: null,
+      manageConnectionHref: "/compartir",
     },
     ...sharedOwners.filter(
       (owner, index, arr) =>
@@ -2346,6 +2359,57 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
             </div>
           </div>
         </div>
+
+        {selectedSharedAgenda ? (
+          <section className="mt-5 rounded-[2rem] border border-sky-200/80 bg-sky-50/90 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-sky-700">
+                    Conexión activa
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                    Solo lectura
+                  </span>
+                </div>
+
+                <h2 className="mt-3 break-words text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                  Agenda de {selectedSharedAgenda.owner.label}
+                </h2>
+
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  Estás dentro de una agenda ajena. Desde aquí puedes editar el alias,
+                  gestionar la conexión o volver a tu agenda.
+                </p>
+              </div>
+
+              <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 lg:flex">
+                {selectedSharedAgenda.owner.editAliasHref ? (
+                  <Link
+                    href={selectedSharedAgenda.owner.editAliasHref}
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 lg:w-auto"
+                  >
+                    Editar alias
+                  </Link>
+                ) : null}
+
+                <Link
+                  href={selectedSharedAgenda.owner.manageConnectionHref}
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 lg:w-auto"
+                >
+                  Gestionar conexión
+                </Link>
+
+                <Link
+                  href={ownAgendaHref}
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 lg:w-auto"
+                >
+                  Volver a mi agenda
+                </Link>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <div className="mt-5">
           <QuickAddJobForm />
@@ -3299,36 +3363,35 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
               id="agenda-compartida"
               className="mt-8 rounded-[2rem] border border-sky-200/80 bg-white/82 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6"
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
+              <div className="flex flex-col gap-4">
+                <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 sm:text-sm">
                     Compartida
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-                    Elige qué agenda compartida quieres ver
+                  <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">
+                    Cambiar agenda compartida
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
-                    Puedes abrir una agenda ajena en solo lectura o salir de la
-                    vista compartida cuando quieras. Solo se muestra una cada vez
-                    para que la pantalla quede más limpia.
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Aquí eliges si quieres seguir en tu agenda o entrar en una
+                    ajena en solo lectura.
                   </p>
 
-                  {selectedSharedAgenda ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-sky-700">
-                        Vista actual: {selectedSharedAgenda.owner.label}
-                      </span>
-                      <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-700">
-                        Solo lectura
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedSharedAgenda ? (
+                      <>
+                        <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-sky-700">
+                          Vista actual: {selectedSharedAgenda.owner.label}
+                        </span>
+                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                          Solo lectura
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
                         Mostrando solo mi agenda
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 <SharedAgendaSelector

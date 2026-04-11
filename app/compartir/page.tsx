@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 type CompartirPageProps = {
   searchParams?: Promise<{
     q?: string;
+    editAlias?: string;
   }>;
 };
 
@@ -44,12 +45,11 @@ type ActiveLinkCard = {
   inviteId: string | null;
   partnerUserId: string;
   title: string;
-  partnerBaseName: string | null;
+  baseName: string;
   partnerEmail: string | null;
   createdAt: string | null;
   aliasPlaceholder: string;
   hasCustomAlias: boolean;
-  agendaHref: string;
 };
 
 function normalizeEmail(value: string | null | undefined) {
@@ -98,17 +98,38 @@ function getPendingOutgoingLabel(invite: InviteRow) {
       : "Profesional invitado";
 }
 
-function matchesConnectionQuery(link: ActiveLinkCard, query: string) {
-  if (!query) return true;
+function buildCompartirHref(params: {
+  q?: string;
+  editAlias?: string;
+  hash?: string;
+}) {
+  const search = new URLSearchParams();
 
-  const haystack = normalizeText(
-    [link.title, link.partnerBaseName, link.partnerEmail].filter(Boolean).join(" ")
-  );
+  if (params.q?.trim()) {
+    search.set("q", params.q.trim());
+  }
 
-  return haystack.includes(normalizeText(query));
+  if (params.editAlias?.trim()) {
+    search.set("editAlias", params.editAlias.trim());
+  }
+
+  const queryString = search.toString();
+  const base = queryString ? `/compartir?${queryString}` : "/compartir";
+
+  return params.hash ? `${base}#${params.hash}` : base;
 }
 
-export default async function CompartirPage({ searchParams }: CompartirPageProps) {
+function renderActionButtonClasses(variant: "primary" | "secondary" = "secondary") {
+  if (variant === "primary") {
+    return "inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto";
+  }
+
+  return "inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 sm:w-auto";
+}
+
+export default async function CompartirPage({
+  searchParams,
+}: CompartirPageProps) {
   const supabase = await getSupabaseServer();
 
   const {
@@ -121,7 +142,9 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
   }
 
   const resolvedSearchParams = (await searchParams) ?? {};
-  const query = (resolvedSearchParams.q ?? "").trim();
+  const searchQuery = (resolvedSearchParams.q ?? "").trim();
+  const requestedEditAlias = (resolvedSearchParams.editAlias ?? "").trim();
+  const normalizedSearchQuery = normalizeText(searchQuery);
 
   const currentUserId = user.id;
   const currentUserEmail = normalizeEmail(user.email);
@@ -160,7 +183,11 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
       invite.invitee_user_id === currentUserId ||
       normalizeEmail(invite.invitee_email) === currentUserEmail;
 
-    return isPending && belongsToCurrentUser && invite.inviter_user_id !== currentUserId;
+    return (
+      isPending &&
+      belongsToCurrentUser &&
+      invite.inviter_user_id !== currentUserId
+    );
   });
 
   const outgoingPendingInvites = invites.filter((invite) => {
@@ -195,31 +222,40 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
         ? matchingInvite.invitee_email
         : matchingInvite?.inviter_email;
 
-    const partnerBaseName =
-      getDisplayNameFromProfile(partnerProfile) || partnerEmail?.trim() || null;
+    const fallbackName =
+      getDisplayNameFromProfile(partnerProfile) ||
+      partnerEmail?.trim() ||
+      "Profesional conectado";
 
-    const normalizedAlias = aliasForCurrentUser?.trim() || "";
-    const visibleName = normalizedAlias || partnerBaseName || "Profesional conectado";
+    const trimmedAlias = aliasForCurrentUser?.trim() || "";
+    const visibleName = trimmedAlias || fallbackName;
 
     return {
       id: String(link.id),
       inviteId: matchingInvite?.id ?? null,
       partnerUserId,
       title: visibleName,
-      partnerBaseName,
+      baseName: fallbackName,
       partnerEmail: partnerEmail?.trim() || null,
       createdAt: link.created_at ?? null,
       aliasPlaceholder: partnerEmail?.trim()
         ? `Ejemplo: ${partnerEmail.trim()}`
         : "Nombre para este compañero",
-      hasCustomAlias: Boolean(normalizedAlias),
-      agendaHref: `/agenda?shared=${encodeURIComponent(partnerUserId)}#agenda-compartida`,
+      hasCustomAlias: Boolean(trimmedAlias),
     };
   });
 
-  const filteredActiveLinkCards = activeLinkCards.filter((link) =>
-    matchesConnectionQuery(link, query)
-  );
+  const filteredActiveLinkCards = activeLinkCards.filter((link) => {
+    if (!normalizedSearchQuery) {
+      return true;
+    }
+
+    const haystack = normalizeText(
+      [link.title, link.baseName, link.partnerEmail].filter(Boolean).join(" ")
+    );
+
+    return haystack.includes(normalizedSearchQuery);
+  });
 
   const activeLinkOptions: ActiveLinkOption[] = activeLinkCards.map((link) => ({
     id: link.id,
@@ -235,8 +271,14 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
       placeholder: link.aliasPlaceholder,
     }));
 
+  const initialSelectedAliasId = activeAliasOptions.some(
+    (link) => link.id === requestedEditAlias
+  )
+    ? requestedEditAlias
+    : undefined;
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="max-w-3xl">
           <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
@@ -249,7 +291,8 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
 
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
             Aquí puedes invitar a otro profesional para que vea tu agenda y tú la
-            suya en modo solo lectura. La conexión se puede desactivar cuando quieras.
+            suya en modo solo lectura. La conexión se puede desactivar cuando
+            quieras.
           </p>
         </div>
 
@@ -296,49 +339,50 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
 
           {activeLinkCards.length ? (
             <>
-              <form action="/compartir" method="get" className="mt-5">
-                <label
-                  htmlFor="connections-search"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Buscar conexión
-                </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    id="connections-search"
-                    name="q"
-                    type="text"
-                    defaultValue={query}
-                    placeholder="Buscar por alias, nombre o email"
-                    className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              <form method="get" className="mt-5">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="connections-search"
+                    className="block text-sm font-medium text-slate-700"
                   >
-                    Buscar
-                  </button>
-                  {query ? (
-                    <Link
-                      href="/compartir"
-                      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-                    >
-                      Limpiar
-                    </Link>
-                  ) : null}
+                    Buscar conexión
+                  </label>
+
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      id="connections-search"
+                      type="text"
+                      name="q"
+                      defaultValue={searchQuery}
+                      placeholder="Busca por alias, nombre o email"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                    />
+
+                    <div className="grid grid-cols-1 gap-2 sm:flex">
+                      <button
+                        type="submit"
+                        className={renderActionButtonClasses("primary")}
+                      >
+                        Buscar
+                      </button>
+
+                      {searchQuery ? (
+                        <Link
+                          href="/compartir"
+                          className={renderActionButtonClasses()}
+                        >
+                          Limpiar
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-500">
+                    Mostrando {filteredActiveLinkCards.length} de{" "}
+                    {activeLinkCards.length} conexiones activas.
+                  </p>
                 </div>
               </form>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">
-                  Mostrando {filteredActiveLinkCards.length} de {activeLinkCards.length}
-                </span>
-                {query ? (
-                  <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700">
-                    Filtro activo: {query}
-                  </span>
-                ) : null}
-              </div>
 
               {filteredActiveLinkCards.length ? (
                 <div className="mt-5 space-y-4">
@@ -347,27 +391,32 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                       key={link.id}
                       className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-4">
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-semibold text-slate-900">
+                            <h3 className="break-words text-base font-semibold text-slate-900">
                               {link.title}
                             </h3>
 
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                                 link.hasCustomAlias
-                                  ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                                  ? "border border-sky-200 bg-sky-50 text-sky-700"
                                   : "border border-slate-200 bg-white text-slate-600"
                               }`}
                             >
-                              {link.hasCustomAlias ? "Alias personalizado" : "Sin alias personalizado"}
+                              {link.hasCustomAlias
+                                ? "Alias personalizado"
+                                : "Sin alias"}
                             </span>
                           </div>
 
-                          {link.partnerBaseName && link.partnerBaseName !== link.title ? (
+                          {link.hasCustomAlias ? (
                             <p className="mt-1 text-sm text-slate-600">
-                              Nombre base: {link.partnerBaseName}
+                              Nombre base:{" "}
+                              <span className="font-medium text-slate-800">
+                                {link.baseName}
+                              </span>
                             </p>
                           ) : null}
 
@@ -377,22 +426,34 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                             </p>
                           ) : null}
 
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-semibold text-sky-700">
-                              Se abrirá en solo lectura
-                            </span>
-                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                              Conectado desde {formatDate(link.createdAt)}
-                            </span>
-                          </div>
+                          <p className="mt-2 text-xs text-slate-500">
+                            Conectado desde {formatDate(link.createdAt)}
+                          </p>
                         </div>
 
-                        <Link
-                          href={link.agendaHref}
-                          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-                        >
-                          Ver esta agenda
-                        </Link>
+                        <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+                          {link.inviteId ? (
+                            <Link
+                              href={buildCompartirHref({
+                                q: searchQuery,
+                                editAlias: link.inviteId,
+                                hash: "edit-shared-link-alias-form",
+                              })}
+                              className={renderActionButtonClasses()}
+                            >
+                              Editar alias
+                            </Link>
+                          ) : null}
+
+                          <Link
+                            href={`/agenda?shared=${encodeURIComponent(
+                              link.partnerUserId
+                            )}#agenda-compartida`}
+                            className={renderActionButtonClasses()}
+                          >
+                            Ver esta agenda
+                          </Link>
+                        </div>
                       </div>
                     </article>
                   ))}
@@ -414,7 +475,10 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
           )}
 
           <div className="mt-6 min-w-0">
-            <EditSharedLinkAliasForm links={activeAliasOptions} />
+            <EditSharedLinkAliasForm
+              links={activeAliasOptions}
+              initialSelectedLinkId={initialSelectedAliasId}
+            />
           </div>
 
           <div className="mt-6 min-w-0">
@@ -440,7 +504,7 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                     key={invite.id}
                     className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <h3 className="text-base font-semibold text-slate-900">
+                    <h3 className="break-words text-base font-semibold text-slate-900">
                       {getPendingIncomingLabel(invite)}
                     </h3>
 
@@ -454,15 +518,16 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                       Recibida el {formatDate(invite.created_at)}
                     </p>
 
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                       <form
                         action={`/api/compartir/invitaciones/${invite.id}`}
                         method="post"
+                        className="w-full sm:w-auto"
                       >
                         <input type="hidden" name="action" value="accept" />
                         <button
                           type="submit"
-                          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                          className={renderActionButtonClasses("primary")}
                         >
                           Aceptar
                         </button>
@@ -471,11 +536,12 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                       <form
                         action={`/api/compartir/invitaciones/${invite.id}`}
                         method="post"
+                        className="w-full sm:w-auto"
                       >
                         <input type="hidden" name="action" value="reject" />
                         <button
                           type="submit"
-                          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                          className={renderActionButtonClasses()}
                         >
                           Rechazar
                         </button>
@@ -510,7 +576,7 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                     key={invite.id}
                     className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <h3 className="text-base font-semibold text-slate-900">
+                    <h3 className="break-words text-base font-semibold text-slate-900">
                       {getPendingOutgoingLabel(invite)}
                     </h3>
 
@@ -525,12 +591,12 @@ export default async function CompartirPage({ searchParams }: CompartirPageProps
                     <form
                       action={`/api/compartir/invitaciones/${invite.id}`}
                       method="post"
-                      className="mt-4"
+                      className="mt-4 w-full sm:w-auto"
                     >
                       <input type="hidden" name="action" value="cancel" />
                       <button
                         type="submit"
-                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                        className={renderActionButtonClasses()}
                       >
                         Cancelar invitación
                       </button>

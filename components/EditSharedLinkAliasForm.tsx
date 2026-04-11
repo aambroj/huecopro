@@ -10,6 +10,7 @@ type EditSharedLinkOption = {
 
 type EditSharedLinkAliasFormProps = {
   links: EditSharedLinkOption[];
+  initialSelectedLinkId?: string;
 };
 
 function getFriendlyErrorMessage(message: string) {
@@ -32,8 +33,13 @@ function getFriendlyErrorMessage(message: string) {
 
 export default function EditSharedLinkAliasForm({
   links,
+  initialSelectedLinkId,
 }: EditSharedLinkAliasFormProps) {
-  const [selectedLinkId, setSelectedLinkId] = useState<string>(links[0]?.id ?? "");
+  const [selectedLinkId, setSelectedLinkId] = useState<string>(
+    initialSelectedLinkId && links.some((link) => link.id === initialSelectedLinkId)
+      ? initialSelectedLinkId
+      : links[0]?.id ?? ""
+  );
   const [aliasValue, setAliasValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,6 +48,29 @@ export default function EditSharedLinkAliasForm({
   const selectedLink = useMemo(() => {
     return links.find((link) => link.id === selectedLinkId) ?? null;
   }, [links, selectedLinkId]);
+
+  useEffect(() => {
+    if (!links.length) {
+      setSelectedLinkId("");
+      return;
+    }
+
+    if (
+      initialSelectedLinkId &&
+      links.some((link) => link.id === initialSelectedLinkId)
+    ) {
+      setSelectedLinkId(initialSelectedLinkId);
+      return;
+    }
+
+    setSelectedLinkId((current) => {
+      if (current && links.some((link) => link.id === current)) {
+        return current;
+      }
+
+      return links[0]?.id ?? "";
+    });
+  }, [initialSelectedLinkId, links]);
 
   useEffect(() => {
     setAliasValue("");
@@ -71,16 +100,19 @@ export default function EditSharedLinkAliasForm({
     setSuccessMessage("");
 
     try {
-      const response = await fetch(`/api/compartir/invitaciones/${selectedLinkId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "update_alias",
-          alias_for_invitee: trimmedAlias,
-        }),
-      });
+      const response = await fetch(
+        `/api/compartir/invitaciones/${selectedLinkId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "update_alias",
+            alias_for_invitee: trimmedAlias,
+          }),
+        }
+      );
 
       const payload = (await response.json().catch(() => null)) as
         | { error?: string; success?: boolean }
@@ -105,9 +137,9 @@ export default function EditSharedLinkAliasForm({
   if (!links.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-600">
-          Cuando tengas una conexión activa, podrás ponerle aquí un nombre más claro
-          para reconocerla mejor.
+        <p className="text-sm leading-6 text-slate-600">
+          Cuando tengas una conexión activa, podrás ponerle aquí un nombre más
+          claro para reconocerla mejor.
         </p>
       </div>
     );
@@ -115,6 +147,7 @@ export default function EditSharedLinkAliasForm({
 
   return (
     <form
+      id="edit-shared-link-alias-form"
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
     >
@@ -122,8 +155,19 @@ export default function EditSharedLinkAliasForm({
         <h3 className="text-base font-semibold text-slate-900">
           Cambiar nombre de una conexión
         </h3>
-        <p className="text-sm text-slate-600">
-          Pon un nombre corto para reconocer mejor la agenda del otro profesional.
+        <p className="text-sm leading-6 text-slate-600">
+          Pon un nombre corto para reconocer mejor la agenda del otro
+          profesional.
+        </p>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+          Consejo
+        </p>
+        <p className="mt-1 text-sm leading-6 text-slate-700">
+          Usa un nombre fácil de reconocer, por ejemplo el oficio, la zona o el
+          nombre con el que identificas a ese compañero.
         </p>
       </div>
 
@@ -134,6 +178,7 @@ export default function EditSharedLinkAliasForm({
         >
           Conexión
         </label>
+
         <select
           id="edit-shared-link"
           value={selectedLinkId}
@@ -150,13 +195,35 @@ export default function EditSharedLinkAliasForm({
         </select>
       </div>
 
+      {selectedLink ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Conexión seleccionada
+          </p>
+          <p className="mt-1 break-words text-base font-semibold text-slate-900">
+            {selectedLink.label}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Vas a guardar un nombre visible solo para ti, para reconocer mejor
+            esta agenda compartida.
+          </p>
+        </div>
+      ) : null}
+
       <div className="mt-4 space-y-2">
-        <label
-          htmlFor="shared-link-alias"
-          className="block text-sm font-medium text-slate-700"
-        >
-          Nombre o alias
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label
+            htmlFor="shared-link-alias"
+            className="block text-sm font-medium text-slate-700"
+          >
+            Nombre o alias
+          </label>
+
+          <span className="text-xs text-slate-500">
+            {aliasValue.length}/80
+          </span>
+        </div>
+
         <input
           id="shared-link-alias"
           type="text"
@@ -167,8 +234,10 @@ export default function EditSharedLinkAliasForm({
           disabled={submitting}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
         />
-        <p className="text-xs text-slate-500">
-          Este nombre te servirá para identificar mejor esa agenda compartida.
+
+        <p className="text-xs leading-5 text-slate-500">
+          Este nombre te servirá para identificar mejor esa agenda compartida en
+          la lista y en el selector de agendas.
         </p>
       </div>
 
@@ -188,7 +257,7 @@ export default function EditSharedLinkAliasForm({
         <button
           type="submit"
           disabled={submitting || !selectedLinkId}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {submitting ? "Guardando..." : "Guardar nombre"}
         </button>
