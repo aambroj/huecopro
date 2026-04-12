@@ -2897,7 +2897,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
                 <Link
                   href={ownAgendaHref}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-800"
                 >
                   Abrir mi agenda
                 </Link>

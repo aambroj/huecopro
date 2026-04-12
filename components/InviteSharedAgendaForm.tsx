@@ -160,7 +160,7 @@ export default function InviteSharedAgendaForm() {
         <button
           type="submit"
           disabled={submitting || isRefreshing}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {submitting ? "Enviando..." : "Enviar invitación"}
         </button>

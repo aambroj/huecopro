@@ -133,7 +133,7 @@ function getSecondaryButtonClasses() {
 }
 
 function getPrimaryButtonClasses() {
-  return "inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto";
+  return "inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-800 sm:w-auto";
 }
 
 function getStatCardClasses() {
