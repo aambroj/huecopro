@@ -1,141 +1,137 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 type SharedInviteActionsProps = {
   inviteId: string;
-  variant: "received" | "sent";
+  variant: "incoming" | "outgoing";
 };
+
+function getFriendlyErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("unauthorized")) {
+    return "Debes iniciar sesión para gestionar invitaciones.";
+  }
+
+  if (normalized.includes("not found")) {
+    return "No se ha encontrado la invitación.";
+  }
+
+  if (normalized.includes("invalid")) {
+    return "La acción no se pudo completar.";
+  }
+
+  return message || "No se pudo actualizar la invitación.";
+}
 
 export default function SharedInviteActions({
   inviteId,
   variant,
 }: SharedInviteActionsProps) {
   const router = useRouter();
-  const [loadingAction, setLoadingAction] = useState<
+  const [submittingAction, setSubmittingAction] = useState<
     "accept" | "reject" | "cancel" | null
   >(null);
-  const [aliasForInvitee, setAliasForInvitee] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, startTransition] = useTransition();
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const inputClasses =
-    "w-full min-w-0 rounded-2xl border border-slate-300/90 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
-
-  async function runAction(action: "accept" | "reject" | "cancel") {
-    setLoadingAction(action);
-    setError(null);
+  async function submitAction(action: "accept" | "reject" | "cancel") {
+    setSubmittingAction(action);
+    setErrorMessage("");
 
     try {
+      const formData = new FormData();
+      formData.append("action", action);
+
       const response = await fetch(`/api/compartir/invitaciones/${inviteId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action,
-          alias_for_invitee: aliasForInvitee,
-        }),
+        method: "POST",
+        body: formData,
       });
 
-      const result = await response.json();
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; success?: boolean }
+        | null;
 
       if (!response.ok) {
-        throw new Error(result?.error || "No se pudo actualizar la invitación.");
+        throw new Error(payload?.error || "No se pudo actualizar la invitación.");
       }
 
-      router.refresh();
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "No se pudo actualizar la invitación.";
-      setError(message);
+      setErrorMessage(getFriendlyErrorMessage(message));
     } finally {
-      setLoadingAction(null);
+      setSubmittingAction(null);
     }
   }
 
-  if (variant === "sent") {
+  if (variant === "outgoing") {
     return (
-      <div className="min-w-0 w-full xl:w-auto">
-        <div className="flex min-w-0 flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => runAction("cancel")}
-            disabled={loadingAction !== null}
-            className="inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 xl:w-auto"
-          >
-            {loadingAction === "cancel"
-              ? "Cancelando..."
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => submitAction("cancel")}
+          disabled={Boolean(submittingAction) || isRefreshing}
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          {submittingAction === "cancel"
+            ? "Cancelando..."
+            : isRefreshing
+              ? "Actualizando..."
               : "Cancelar invitación"}
-          </button>
+        </button>
 
-          {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
-              {error}
-            </div>
-          ) : null}
-        </div>
+        {errorMessage ? (
+          <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <div className="min-w-0 w-full max-w-none xl:max-w-md">
-      <div className="grid min-w-0 gap-3">
-        <label className="grid min-w-0 gap-2">
-          <span className="text-sm font-semibold text-slate-700">
-            Cómo quieres identificar a este profesional (opcional)
-          </span>
+    <div className="mt-4">
+      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+        <button
+          type="button"
+          onClick={() => submitAction("accept")}
+          disabled={Boolean(submittingAction) || isRefreshing}
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          {submittingAction === "accept"
+            ? "Aceptando..."
+            : isRefreshing
+              ? "Actualizando..."
+              : "Aceptar"}
+        </button>
 
-          <input
-            type="text"
-            value={aliasForInvitee}
-            onChange={(event) => setAliasForInvitee(event.target.value)}
-            placeholder="Ejemplo: Electricista Pedro"
-            maxLength={60}
-            className={inputClasses}
-          />
-        </label>
-
-        <div className="rounded-3xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm leading-6 text-sky-800 shadow-sm">
-          Si aceptas,
-          <span className="font-semibold">
-            {" "}
-            se activará la visibilidad mutua entre ambas agendas
-          </span>
-          . Tú verás su agenda y la otra persona verá la tuya.
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => runAction("accept")}
-            disabled={loadingAction !== null}
-            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loadingAction === "accept"
-              ? "Aceptando..."
-              : "Aceptar y compartir ambas agendas"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => runAction("reject")}
-            disabled={loadingAction !== null}
-            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-slate-300/90 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loadingAction === "reject" ? "Rechazando..." : "Rechazar"}
-          </button>
-        </div>
-
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
-            {error}
-          </div>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => submitAction("reject")}
+          disabled={Boolean(submittingAction) || isRefreshing}
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          {submittingAction === "reject"
+            ? "Rechazando..."
+            : isRefreshing
+              ? "Actualizando..."
+              : "Rechazar"}
+        </button>
       </div>
+
+      {errorMessage ? (
+        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
     </div>
   );
 }

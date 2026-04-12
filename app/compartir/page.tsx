@@ -2,6 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import EditSharedLinkAliasForm from "@/components/EditSharedLinkAliasForm";
+import InviteSharedAgendaForm from "@/components/InviteSharedAgendaForm";
+import SharedInviteActions from "@/components/SharedInviteActions";
+import SharedInvitesLiveStrip from "@/components/SharedInvitesLiveStrip";
+import SharedInvitesRealtimeNotice from "@/components/SharedInvitesRealtimeNotice";
 import DeactivateSharedLinkForm, {
   type ActiveLinkOption,
 } from "@/components/DeactivateSharedLinkForm";
@@ -324,6 +328,8 @@ export default async function CompartirPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <SharedInvitesRealtimeNotice userEmail={currentUserEmail} />
+
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="max-w-3xl">
           <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
@@ -487,6 +493,14 @@ export default async function CompartirPage({
             </div>
           </>
         ) : null}
+      </div>
+
+      <div className="mt-6">
+        <SharedInvitesLiveStrip userEmail={currentUserEmail} />
+      </div>
+
+      <div className="mt-6">
+        <InviteSharedAgendaForm />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -698,35 +712,10 @@ export default async function CompartirPage({
                       Recibida el {formatDate(invite.created_at)}
                     </p>
 
-                    <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
-                      <form
-                        action={`/api/compartir/invitaciones/${invite.id}`}
-                        method="post"
-                        className="w-full sm:w-auto"
-                      >
-                        <input type="hidden" name="action" value="accept" />
-                        <button
-                          type="submit"
-                          className={getPrimaryButtonClasses()}
-                        >
-                          Aceptar
-                        </button>
-                      </form>
-
-                      <form
-                        action={`/api/compartir/invitaciones/${invite.id}`}
-                        method="post"
-                        className="w-full sm:w-auto"
-                      >
-                        <input type="hidden" name="action" value="reject" />
-                        <button
-                          type="submit"
-                          className={getSecondaryButtonClasses()}
-                        >
-                          Rechazar
-                        </button>
-                      </form>
-                    </div>
+                    <SharedInviteActions
+                      inviteId={invite.id}
+                      variant="incoming"
+                    />
                   </article>
                 ))}
               </div>
@@ -768,19 +757,10 @@ export default async function CompartirPage({
                       Enviada el {formatDate(invite.created_at)}
                     </p>
 
-                    <form
-                      action={`/api/compartir/invitaciones/${invite.id}`}
-                      method="post"
-                      className="mt-4 w-full sm:w-auto"
-                    >
-                      <input type="hidden" name="action" value="cancel" />
-                      <button
-                        type="submit"
-                        className={getSecondaryButtonClasses()}
-                      >
-                        Cancelar invitación
-                      </button>
-                    </form>
+                    <SharedInviteActions
+                      inviteId={invite.id}
+                      variant="outgoing"
+                    />
                   </article>
                 ))}
               </div>
