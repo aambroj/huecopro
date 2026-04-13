@@ -41,7 +41,7 @@ function getInitialAliasValue(link: EditSharedLinkOption | null) {
     return explicitAlias;
   }
 
-  return link.label?.trim() || "";
+  return "";
 }
 
 export default function EditSharedLinkAliasForm({
@@ -193,7 +193,7 @@ export default function EditSharedLinkAliasForm({
         </div>
 
         <p className="text-sm leading-6 text-slate-600">
-          Puedes editar el nombre actual sin tener que escribirlo otra vez.
+          En conexión verás el identificador fijo y aquí podrás editar tu alias.
         </p>
       </div>
 
@@ -216,7 +216,7 @@ export default function EditSharedLinkAliasForm({
             {selectedLink.label}
           </p>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            El nombre que ves en el campo de abajo es el que se guardará para ti.
+            El nombre editable está en el campo de abajo.
           </p>
         </div>
       ) : null}
@@ -269,7 +269,7 @@ export default function EditSharedLinkAliasForm({
         />
 
         <p className="text-xs leading-5 text-slate-500">
-          Este nombre te servirá para identificar mejor esa agenda compartida en
+          Este alias te servirá para identificar mejor esa agenda compartida en
           la lista y en el selector de agendas.
         </p>
       </div>

@@ -73,6 +73,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const isParticipant =
+      linkRow.user_a_id === user.id || linkRow.user_b_id === user.id;
+
+    if (!isParticipant) {
+      return NextResponse.json(
+        { error: "No puedes modificar una conexión que no es tuya." },
+        { status: 403 }
+      );
+    }
+
     if (!linkRow.is_active) {
       return NextResponse.json({ ok: true, link: linkRow });
     }

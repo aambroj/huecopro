@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export type ActiveLinkOption = {
   id: string;
   label: string;
   aliasPlaceholder?: string;
+  currentAlias?: string;
 };
 
 type DeactivateSharedLinkFormProps = {
@@ -20,7 +22,11 @@ function getFriendlyErrorMessage(message: string) {
     return "Debes iniciar sesión para cambiar una conexión.";
   }
 
-  if (normalized.includes("no active shared link found")) {
+  if (normalized.includes("not found")) {
+    return "No se ha encontrado la conexión activa.";
+  }
+
+  if (normalized.includes("shared link")) {
     return "No se ha encontrado una conexión activa para desactivar.";
   }
 
@@ -31,6 +37,9 @@ export default function DeactivateSharedLinkForm({
   links,
   initialSelectedLinkId,
 }: DeactivateSharedLinkFormProps) {
+  const router = useRouter();
+  const [isRefreshing, startTransition] = useTransition();
+
   const [selectedLinkId, setSelectedLinkId] = useState<string>(
     initialSelectedLinkId && links.some((link) => link.id === initialSelectedLinkId)
       ? initialSelectedLinkId
@@ -91,13 +100,13 @@ export default function DeactivateSharedLinkForm({
     setSuccessMessage("");
 
     try {
-      const response = await fetch("/api/compartir/conexiones/desactivar", {
-        method: "POST",
+      const response = await fetch(`/api/compartir/enlaces/${selectedLinkId}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          link_id: selectedLinkId,
+          action: "deactivate",
         }),
       });
 
@@ -111,7 +120,10 @@ export default function DeactivateSharedLinkForm({
 
       setSuccessMessage("Conexión desactivada correctamente.");
       setSelectedLinkId("");
-      window.location.reload();
+
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (error) {
       const message =
         error instanceof Error
@@ -191,6 +203,13 @@ export default function DeactivateSharedLinkForm({
           <p className="mt-1 break-words text-base font-semibold text-slate-900">
             {selectedLink.label}
           </p>
+
+          {selectedLink.currentAlias ? (
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Alias actual: {selectedLink.currentAlias}
+            </p>
+          ) : null}
+
           <p className="mt-1 text-sm leading-6 text-slate-600">
             {selectedLink.aliasPlaceholder ??
               "Esta conexión dejará de estar compartida."}
@@ -211,7 +230,7 @@ export default function DeactivateSharedLinkForm({
           value={selectedLinkId}
           onChange={(event) => setSelectedLinkId(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-          disabled={submitting}
+          disabled={submitting || isRefreshing}
         >
           <option value="">Selecciona una conexión</option>
           {links.map((link) => (
@@ -237,10 +256,10 @@ export default function DeactivateSharedLinkForm({
       <div className="mt-4">
         <button
           type="submit"
-          disabled={submitting || !selectedLinkId}
+          disabled={submitting || isRefreshing || !selectedLinkId}
           className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          {submitting ? "Desactivando..." : "Desactivar conexión"}
+          {submitting ? "Desactivando..." : isRefreshing ? "Actualizando..." : "Desactivar conexión"}
         </button>
       </div>
     </form>

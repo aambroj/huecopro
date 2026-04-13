@@ -5,6 +5,7 @@ import EditSharedLinkAliasForm from "@/components/EditSharedLinkAliasForm";
 import InviteSharedAgendaForm from "@/components/InviteSharedAgendaForm";
 import SharedInviteActions from "@/components/SharedInviteActions";
 import SharedInvitesLiveStrip from "@/components/SharedInvitesLiveStrip";
+import ScrollToElementButton from "@/components/ScrollToElementButton";
 import DeactivateSharedLinkForm, {
   type ActiveLinkOption,
 } from "@/components/DeactivateSharedLinkForm";
@@ -300,8 +301,9 @@ export default async function CompartirPage({
 
   const activeLinkOptions: ActiveLinkOption[] = activeLinkCards.map((link) => ({
     id: link.id,
-    label: link.title,
+    label: link.partnerEmail?.trim() || link.baseName || link.title,
     aliasPlaceholder: link.aliasPlaceholder,
+    currentAlias: link.hasCustomAlias ? link.title : "",
   }));
 
   const activeAliasOptions = activeLinkCards
@@ -435,12 +437,12 @@ export default async function CompartirPage({
                 </Link>
 
                 {highlightedLink.inviteId ? (
-                  <Link
-                    href="#edit-shared-link-alias-form"
+                  <ScrollToElementButton
+                    targetId="edit-shared-link-alias-form"
                     className={getSecondaryButtonClasses()}
                   >
                     Cambiar alias
-                  </Link>
+                  </ScrollToElementButton>
                 ) : null}
 
                 <Link
@@ -582,6 +584,7 @@ export default async function CompartirPage({
                               <Link
                                 href={buildCompartirHref({
                                   q: searchQuery,
+                                  editAlias: link.inviteId,
                                   focusLink: link.id,
                                   hash: "edit-shared-link-alias-form",
                                 })}

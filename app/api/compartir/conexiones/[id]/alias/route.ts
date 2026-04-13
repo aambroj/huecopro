@@ -143,8 +143,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const updatePayload = isInviter
-      ? { alias_for_invitee: alias || null }
-      : { alias_for_inviter: alias || null };
+      ? { alias_for_inviter: alias || null }
+      : { alias_for_invitee: alias || null };
 
     const { data, error } = await supabase
       .from("shared_agenda_invites")
