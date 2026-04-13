@@ -7,6 +7,7 @@ type EditSharedLinkOption = {
   id: string;
   label: string;
   placeholder?: string;
+  currentAlias?: string;
 };
 
 type EditSharedLinkAliasFormProps = {
@@ -30,6 +31,17 @@ function getFriendlyErrorMessage(message: string) {
   }
 
   return message || "No se pudo guardar el nombre de la conexión.";
+}
+
+function getInitialAliasValue(link: EditSharedLinkOption | null) {
+  if (!link) return "";
+
+  const explicitAlias = link.currentAlias?.trim();
+  if (explicitAlias) {
+    return explicitAlias;
+  }
+
+  return link.label?.trim() || "";
 }
 
 export default function EditSharedLinkAliasForm({
@@ -82,10 +94,10 @@ export default function EditSharedLinkAliasForm({
   }, [initialSelectedLinkId, links]);
 
   useEffect(() => {
-    setAliasValue("");
+    setAliasValue(getInitialAliasValue(selectedLink));
     setErrorMessage("");
     setSuccessMessage("");
-  }, [selectedLinkId]);
+  }, [selectedLink]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -132,7 +144,7 @@ export default function EditSharedLinkAliasForm({
       }
 
       setSuccessMessage("Nombre guardado correctamente.");
-      setAliasValue("");
+      setAliasValue(trimmedAlias);
 
       startTransition(() => {
         router.refresh();
@@ -181,8 +193,7 @@ export default function EditSharedLinkAliasForm({
         </div>
 
         <p className="text-sm leading-6 text-slate-600">
-          Pon un nombre corto para reconocer mejor la agenda del otro
-          profesional.
+          Puedes editar el nombre actual sin tener que escribirlo otra vez.
         </p>
       </div>
 
@@ -205,8 +216,7 @@ export default function EditSharedLinkAliasForm({
             {selectedLink.label}
           </p>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Vas a guardar un nombre visible solo para ti, para reconocer mejor
-            esta agenda compartida.
+            El nombre que ves en el campo de abajo es el que se guardará para ti.
           </p>
         </div>
       ) : null}
