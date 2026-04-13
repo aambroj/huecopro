@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSupabaseServer } from "@/lib/supabase-server";
+import { requireActiveSubscription } from "@/lib/require-active-subscription";
 import EditSharedLinkAliasForm from "@/components/EditSharedLinkAliasForm";
 import InviteSharedAgendaForm from "@/components/InviteSharedAgendaForm";
 import SharedInviteActions from "@/components/SharedInviteActions";
@@ -153,13 +154,14 @@ export default async function CompartirPage({
   searchParams,
 }: CompartirPageProps) {
   const supabase = await getSupabaseServer();
+  const { user } = await requireActiveSubscription();
 
   const {
-    data: { user },
+    data: { user: currentAuthUser },
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+  if (userError || !currentAuthUser || currentAuthUser.id !== user.id) {
     redirect("/login?redirectTo=/compartir");
   }
 
