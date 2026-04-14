@@ -14,6 +14,13 @@ function isAuthRoute(pathname: string) {
   return pathname === "/login" || pathname === "/registro";
 }
 
+function hasSubscriptionAccess(status: unknown) {
+  if (typeof status !== "string") return false;
+
+  const normalized = status.trim().toLowerCase();
+  return normalized === "active" || normalized === "trialing";
+}
+
 function copyCookies(from: NextResponse, to: NextResponse) {
   for (const cookie of from.cookies.getAll()) {
     to.cookies.set(cookie);
@@ -87,26 +94,52 @@ export async function proxy(request: NextRequest) {
     });
   }
 
-  if (user && isAuthRoute(pathname)) {
-    const currentUserEmail = user.email?.trim().toLowerCase() ?? "";
+  if (!user) {
+    return response;
+  }
 
-    if (currentUserEmail === ownerEmail) {
+  const currentUserEmail = user.email?.trim().toLowerCase() ?? "";
+  const isOwner = ownerEmail !== "" && currentUserEmail === ownerEmail;
+
+  let canAccessAgenda = isOwner;
+
+  if (!canAccessAgenda) {
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (subscriptionError) {
+      if (isProtectedRoute(pathname) || isAuthRoute(pathname)) {
+        return buildRedirectResponse(request, response, "/cuenta", {
+          required: "1",
+          reason: "subscription_error",
+        });
+      }
+
+      return response;
+    }
+
+    canAccessAgenda = hasSubscriptionAccess(subscription?.status);
+  }
+
+  if (isProtectedRoute(pathname) && !canAccessAgenda) {
+    return buildRedirectResponse(request, response, "/cuenta", {
+      required: "1",
+      reason: "subscription_required",
+    });
+  }
+
+  if (isAuthRoute(pathname)) {
+    if (canAccessAgenda) {
       return buildRedirectResponse(request, response, "/agenda");
     }
 
     return buildRedirectResponse(request, response, "/cuenta", {
-      forced: "1",
+      required: "1",
+      reason: "subscription_required",
     });
-  }
-
-  if (user && isProtectedRoute(pathname)) {
-    const currentUserEmail = user.email?.trim().toLowerCase() ?? "";
-
-    if (currentUserEmail !== ownerEmail) {
-      return buildRedirectResponse(request, response, "/cuenta", {
-        forced: "1",
-      });
-    }
   }
 
   return response;

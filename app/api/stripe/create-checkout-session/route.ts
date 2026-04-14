@@ -56,7 +56,7 @@ export async function POST() {
     if (userError || !user) {
       return NextResponse.json(
         { error: "Debes iniciar sesión para suscribirte." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST() {
     if (existingSubscriptionError) {
       return NextResponse.json(
         { error: "No se pudo preparar la suscripción." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -98,13 +98,13 @@ export async function POST() {
           },
           {
             onConflict: "user_id",
-          }
+          },
         );
 
       if (upsertError) {
         return NextResponse.json(
           { error: "No se pudo guardar el cliente de Stripe." },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -118,7 +118,6 @@ export async function POST() {
       client_reference_id: user.id,
       payment_method_collection: "always",
       billing_address_collection: "auto",
-      allow_promotion_codes: true,
       line_items: [{ price: stripePriceMonthly, quantity: 1 }],
       discounts: [
         {
@@ -144,7 +143,7 @@ export async function POST() {
     if (!session.url) {
       return NextResponse.json(
         { error: "Stripe no devolvió URL de pago." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
