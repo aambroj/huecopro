@@ -2520,7 +2520,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   if (!user) {
     redirect("/login");
   }
+const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
 
+if (user.email?.trim().toLowerCase() !== ownerEmail) {
+  redirect("/cuenta?required=1&reason=hard_test");
+}
   await ensurePaidAccess({
     supabase,
     userId: user.id,
